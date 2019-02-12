@@ -1,5 +1,4 @@
 # Notes:
-# don't loop with pandas
 
 # show version
 pd.__version__
@@ -37,6 +36,8 @@ df = pd.read_csv('/home/ec2-user/corecustomers_ctrla_utf8.csv',sep=r'\\\\001',nr
 # ************************************************************************************************************* #
 # matplotlib + seaborn
 # ************************************************************************************************************* #
+
+# log scale
 sns.distplot(..., hist_kws={'log':True})
 
 # ************************************************************************************************************* #
@@ -46,6 +47,13 @@ sns.distplot(..., hist_kws={'log':True})
 # import data integrity checks, coerce means convert all non dt or numeric data to nat nan
 pd.to_numeric(df['tester'], errors='coerce')
 pd.to_datetime(df['tester'], errors='coerce')
+
+# read_csv, to_csv
+df = pd.read_csv(f'{args.path}/raw_calc.csv',sep=r'\\\\001',dtype=np.dtype('object')) # dtype = object reads values either a string or nan
+df.to_csv(f'/mnt/gc/data/raw_calc.csv',sep='~',quotechar='"',index=False, quoting=csv.QUOTE_MINIMAL)
+
+# replace values with nan
+df = df.replace(['', ' ', 'null','None','Null','none','NONE','?','na'], np.nan)
 
 # for multiple columns
 for bool_col in [k for k,v in remap.items() if v in [k for k,v in uploaded_types.items() if v['type'] == 'boolean']]:
@@ -104,19 +112,12 @@ print(df.shape[0] - df_no_outliers.shape[0],'many customers removed')
 dfs = [df for df in np.array_split(df,3)]
 
 # ************************************************************************************************************* #
-# python std libs
+# sys, os, and file manipulation
 # ************************************************************************************************************* #
 
 # append paths
 import sys
 sys.path.append('../src/scripts/')
-
-# args
-import argparse
-parser = argparse.ArgumentParser()
-parser.add_argument('--sample', type=str, default='0')
-parser.add_argument('--gzip', type=str, default='t')
-args = parser.parse_args()
 
 # env variables
 import os
@@ -127,13 +128,47 @@ if not os.path.exists(local_creds_path):
     os.makedirs(f'{home}/.smsync/')
     os.system(f'aws s3 cp {s3_creds_path} {local_creds_path}')
 
+# catch cmdline stdout
+job_ids = [i for i in os.popen(f'''smsyncer job list wellbiz_{args.vpc} -format='{{{{ .ID }}}}' -limit {len(files_to_upload)}''').read().split('\n') if i != '']
+
+# ************************************************************************************************************* #
+# python std libs
+# ************************************************************************************************************* #
+
+# args
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('--sample', type=str, default='0')
+parser.add_argument('--gzip', type=str, default='t')
+args = parser.parse_args()
+
+# fake args for use in notebook
+class Args():
+    def __init__():
+        pass
+
+args = Args
+args.path = '/mnt/gc/data'
+args.source = 'full_inc_2'
+args.map = 'full_inc_mapping_2'
+args.calc = 'full_inc_calc_2'
+args.vpc = 'stg'
+args.sample = '0'
+
 # formatting
+f'{args.vpn}'
+
 '.26' = '{:.2f}'.format(.235872)
 '01' = '{:02d}'.format(1)
 '100203' = '{:.0f}'.format(100203.021)
 
+# add a,b,c suffix to filename
+letter = chr(ord('a')+i)
+file_to_upload = f'{args.path}/std_apd_email_{args.sample}{letter}.json'
+
 # dates
 datetime.datetime.strptime('20180531', '%Y%m%d')
+
 # from string to date
 '20180608'.strftime('%Y%m%d')
 
@@ -157,7 +192,6 @@ def chunks(l, n=2500):
     for i in range(0, len(l), n):
         yield l[i:i+n]
 
-
 # read/write json to dict
 with open('/Users/gcounihan/Downloads/user_item_recommendations.json') as f:
     data = json.load(f)
@@ -175,10 +209,12 @@ with open('filename.pickle', 'rb') as handle:
 # data to the cloud, boto3, sqlalchemy
 # ************************************************************************************************************* #
 
+# slow for large queries
 import boto3
 client = boto3.client(service_name='athena',region_name='us-east-1')
 client.start_query_execution(QueryString="select * from test.ads_log_s3 where dy = '02' and mon = '02' and yr = '2017'",ResultConfiguration={'OutputLocation':'s3://bucket/path/'})
 
+# slow for bulk inserts
 import psycopg2 as pg
 import pandas.io.sql as psql
 from sqlalchemy import create_engine
@@ -186,7 +222,7 @@ from sqlalchemy.types import NVARCHAR
 engine = create_engine(f'postgresql+psycopg2://{job_config["db"]["user"]}:{job_config["db"]["password"]}@{job_config["db"]["host"]}/{job_config["db"]["dbname"]}')
 df.to_sql('greyhound_integration_wellbiz_customer_data',engine,index=False,if_exists=args.if_exists,chunksize=int(args.chunksize))
 
-# query via cmdline with query file and variables
+# use psql via cmdline to have quicker performance
 psql_cmd_down = f'''PGPASSWORD='{config["wellbiz_redshift"]["password"]}' psql -A -F '\\\\001' -h{config["wellbiz_redshift"]["host"]} -p{config["wellbiz_redshift"]["port"]} -U{config["wellbiz_redshift"]["user"]} -d{config["wellbiz_redshift"]["database"]} -f {args.query} -o {args.path}/raw_{today}.csv -v v_start={args.start} -v v_end={args.end}'''
 os.system(psql_cmd_down)
 

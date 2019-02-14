@@ -22,6 +22,7 @@ ImageDataBunch()
 .from_csv()
 .from_folder()
     most common way to load images, imagenet style
+    /train/categories and /test/categories
 
 learn()
     main object in fastai that encompases both data and a model
@@ -31,8 +32,6 @@ learn()
     saves the recorder below based on mock loss of the data and lr
 .recorder.plot()
     display lr curve
-
-get names of
 
 
 # notes
@@ -45,6 +44,12 @@ training progression
     and soemthign 10x smaller than what you started with or clearly not close to the
     edge of lr cliff
 
+    you know you have a good training rate if your error doesn't explode and it
+    isn't sluggishly slow either.
+
+    time to get more data when you select a proper learning rate, and your loss goes
+    down and then begins going up, and you're still unhappy with your accuracy
+
 validation loss:
     if its enormous, the learning rate is too high
 
@@ -56,15 +61,48 @@ train loss:
 overfitting in DL:
     your error rate improves for a while and then starts getting worse
 
+oversampling shouldn't be required unless you find your lower samples
+
 if run out of mem, change the bs (batchsize) in the databunch object
 
 recommended to seed prior to running the image data bunch so it picks a repeatable set
     of images because then you can concretely confirm if hyperparam tuning actually helps
     the model since it will be run on the same images again: np.random.seed(42)
 
-imagenet style dataset, labels are folders
-    ./3 has pictures of 3s
-    ./7 has pictures of 7s
-
 if you find activation maps within a convnet that produces zeros for a lot of different
     inputs, you probably have deadfilters. this is a symptom of high learning rates
+
+tensor
+    rank 1 tensor: torch.tensor(np.array([1,2,3]))
+    rank 3 tensor: image rows x columns x channels (r,g,b)
+    rank 4 tensor: num_images x rows x columns x channels (r,g,b)
+
+gradient decent:
+    calculates the loss on the whole data set each time it updates params
+
+stocastic gradient decent:
+    calculates the loss on a sample of the dataset and updates params
+    will bounce around even without a high learning rate
+
+sgd vs gd:
+    the max learning rate appropriate will change based on the batch size etc.
+    meaning choosing whats in your batches is REALLY important (maybe this is already done?)
+    which is why lightfm's warp was sneaky good, because it chose only to do updates on samples
+        that were very wrong. look into this
+
+learning rate (lr):
+    is what we mulitply our gradient by to update our params
+
+epoch:
+    one complete run through all our data. when doing batches, this means all batches
+        seen have included all data
+    generally want to keep epochs down as much as possible, since the more epochs we see
+        the more times we've seen the same data which gets makes it more likely to overfit
+
+architecture:
+    the mathmatical model you're fitting the parameters to
+    y = x1*a1+x2*a2 (a is the params), which is m*x + b
+    y = resnet34(image)
+
+parameters (weights or coeficients):
+    are the numbers that you're updating

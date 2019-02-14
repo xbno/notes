@@ -1,0 +1,70 @@
+fastai course v3 notes
+
+# found useful
+free -m
+docker exec -it container_id bash
+jupyter notebook list
+# sudo docker run --runtime=nvidia -d -p 8888:8888 -v /home/xbno/data:/data -v /home/xbno/ml/course-v3:/course-v3 --shm-size 26G paperspace/fastai:1.0-CUDA9.2-base-3.0-v1.0.6
+sudo docker run --runtime=nvidia -d -p 8888:8888 -v /home/xbno/course-v3/data:/data -v /home/xbno/course-v3/code/course-v3-me:/notebooks/course-v3-me -v /home/xbno/course-v3/pretrained/.torch:/root/.torch --shm-size 26G paperspace/fastai:1.0-CUDA9.2-base-3.0-v1.0.6
+find / -name "stage-1-50*"
+docker container stop $(docker container ls -aq)
+docker container rm $(docker container ls -aq)
+
+# functions
+doc()
+    has links to documentation
+help()
+    shows info
+
+ImageDataBunch()
+    main data object that pulls in data from directory etc
+.from_df()
+.from_csv()
+.from_folder()
+    most common way to load images, imagenet style
+
+learn()
+    main object in fastai that encompases both data and a model
+.load()
+    load saved model, dunno where
+.lr_find()
+    saves the recorder below based on mock loss of the data and lr
+.recorder.plot()
+    display lr curve
+
+get names of
+
+
+# notes
+high loss predictions
+    ones that our model is most confident in but got wrong
+
+training progression
+    start with high lr (~.001 aka 1e-3) or (3e-3 is a jeremys fav) fine tuning last layers
+    follow up with a full tune of all layers with a lr_max of something between 1e-6
+    and soemthign 10x smaller than what you started with or clearly not close to the
+    edge of lr cliff
+
+validation loss:
+    if its enormous, the learning rate is too high
+
+train loss:
+    should always be lower than your validation loss, meaning you haven't fitted enough.
+    bump up # of epochs or learning rate
+    ***this isn't stated by all in deep learning, so may read otherwise***
+
+overfitting in DL:
+    your error rate improves for a while and then starts getting worse
+
+if run out of mem, change the bs (batchsize) in the databunch object
+
+recommended to seed prior to running the image data bunch so it picks a repeatable set
+    of images because then you can concretely confirm if hyperparam tuning actually helps
+    the model since it will be run on the same images again: np.random.seed(42)
+
+imagenet style dataset, labels are folders
+    ./3 has pictures of 3s
+    ./7 has pictures of 7s
+
+if you find activation maps within a convnet that produces zeros for a lot of different
+    inputs, you probably have deadfilters. this is a symptom of high learning rates

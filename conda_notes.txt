@@ -1,0 +1,7 @@
+Steps to install tensorflow + Keras + openai gym with conda
+conda create -n <env_name>
+
+pip install --ignore-installed --upgrade https://storage.googleapis.com/tensorflow/mac/cpu/tensorflow-1.7.0-py3-none-any.whl
+pip install keras
+pip install jupyter ipython
+python -m ipykernel install --user --name <env_name> --display-name "Python (<env_name>)"

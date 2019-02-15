@@ -78,11 +78,19 @@ tensor
     rank 4 tensor: num_images x rows x columns x channels (r,g,b)
 
 gradient decent:
-    calculates the loss on the whole data set each time it updates params
+    calculates the loss on the whole data set (x) each time it updates params
+    ex:
+        y_hat = x@a
+        loss = mse(y, y_hat)
 
 stocastic gradient decent:
-    calculates the loss on a sample of the dataset and updates params
+    calculates the loss on a sample of the dataset (x[rand_idx]) and updates params
     will bounce around even without a high learning rate
+    ex:
+        rand_idx = np.random.choice([i for i in range(n)],s,replace=False)
+        y_hat = x[rand_idx]@a
+        loss = mse(y[rand_idx], y_hat)
+
 
 sgd vs gd:
     the max learning rate appropriate will change based on the batch size etc.

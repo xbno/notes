@@ -72,6 +72,8 @@ recommended to seed prior to running the image data bunch so it picks a repeatab
 if you find activation maps within a convnet that produces zeros for a lot of different
     inputs, you probably have deadfilters. this is a symptom of high learning rates
 
+# lesson 2
+
 tensor
     rank 1 tensor: torch.tensor(np.array([1,2,3]))
     rank 3 tensor: image rows x columns x channels (r,g,b)
@@ -114,3 +116,15 @@ architecture:
 
 parameters (weights or coeficients):
     are the numbers that you're updating
+
+# lesson 3
+
+pytorch dataset/fastai databunch logical structure is:
+    torch.utils.DataSet() is used by torch.utils.data.DataLoader() is used by fastai.
+    DataLoader:
+        combines dataset into a minibatch ready for model consumption
+    DataBunch:
+        composed of two DataLoaders for train and validation sets
+
+fastai DataBlock api:
+    creates all

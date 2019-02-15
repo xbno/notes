@@ -54,8 +54,10 @@ validation loss:
     if its enormous, the learning rate is too high
 
 train loss:
-    should always be lower than your validation loss, meaning you haven't fitted enough.
-    bump up # of epochs or learning rate
+    always aim to train loss lower than validation loss. if its higher your underfitting.
+    bump up # of epochs or learning rate.
+    train the last bit at a lower learning rate?
+    or reduce regularization by adding weight ecay, data aug or
     ***this isn't stated by all in deep learning, so may read otherwise***
 
 overfitting in DL:
@@ -127,4 +129,72 @@ pytorch dataset/fastai databunch logical structure is:
         composed of two DataLoaders for train and validation sets
 
 fastai DataBlock api:
-    creates all
+    creates everything fort he databunch object
+
+tfms get_transforms():
+    filp_vert = True
+
+accuracy:
+    single-class:
+        with a standard single class problem there will be n outputs of the model
+        each will corespond to the probability (because the last layer is a sigmoid)
+        of the class. therefore you use an argmax to find the most likely class based
+        on the class with the highest probability
+        func: accuracy
+    multi-class:
+        with a multi class problem there will be numerous outputs each that an image
+        or input could be labeled with. therefore you need to select a threshold
+        an output neuron needs to exceed to be labeled.
+        func: accuracy_threshold(thresh=.2)
+
+partial:
+    **since we always want to call this function with a thesh=.2 you can use
+    a python 3 thing called acc_02 = partial(func,keyword=value) to call it.**
+
+    def average(l,num):
+        return np.random.choice(l,num,replace=False).mean()
+
+    def a3(l):
+        return average(l,3)
+
+    a3 = partial(average,num=3)
+
+    average([1,2,3],3) == a3(l)
+
+for misclassified data:
+    recommends taking the saved original model, using a new databunch with the
+    misclassified data, and finetuning (unfreezing?) model. test and play most likely
+    but perhaps using a higher lr
+
+lr_find:
+    we want to hit the steepest negative slope so that we can slide down to the bottom.
+    typically before you unfreeze sliding from higher 1e-4ish to the bottom ~1e-2ish
+
+progressive resizing:
+    the idea of training the model on 64x64 then 128x128 then 256x256.
+    a form of transfer learning?
+    how does the same model take a different input so easily?
+    **seems as though it is less sensitive to frozen training as you progressively
+    train on larger images. perhaps lower number of fits or unfreeze quicker
+
+fit_one_cycle:
+    actually bumps the lr up at the beginning and then brings it down
+
+    uses learning rate annealing (gradually decreasing the lr while fitting)
+
+plot_losses:
+    if you find the loss increases a bit and then decreases you've found a good lr
+
+mixed precision training:
+    16bits instead of 32bits precision
+    learner.to_fp16()
+
+normalizing:
+    when training with a pretrained model, you don't want to normalize your data
+    prior to inputting since you'll normolize the data to itself and lose the
+    learning the pretrained model has built. instead
+
+# lesson 4
+
+language model:
+    a model that learns to predict the next word of the sequence

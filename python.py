@@ -30,9 +30,6 @@ display(HTML("<style>.container { width:98% !important; }</style>"))
 # decimal points
 pd.options.display.float_format = '{:.2f}'.format
 
-# read certain cols
-df = pd.read_csv('/home/ec2-user/corecustomers_ctrla_utf8.csv',sep=r'\\\\001',nrows=500000,usecols=['summary_memberstatus','membershipstatus'])
-
 # ************************************************************************************************************* #
 # matplotlib + seaborn
 # ************************************************************************************************************* #
@@ -44,16 +41,26 @@ sns.distplot(..., hist_kws={'log':True})
 # pandas + numpy
 # ************************************************************************************************************* #
 
+# read_csv, to_csv
+df = pd.read_csv('/home/ec2-user/corecustomers_ctrla_utf8.csv',sep=r'\\\\001',nrows=500000,usecols=['summary_memberstatus','membershipstatus'])
+df = pd.read_csv(f'{args.path}/raw_calc.csv',sep=r'\\\\001',dtype=np.dtype('object')) # dtype = object reads values either a string or nan
+df.to_csv(f'/mnt/gc/data/raw_calc.csv',sep='~',quotechar='"',index=False, quoting=csv.QUOTE_MINIMAL)
+
 # import data integrity checks, coerce means convert all non dt or numeric data to nat nan
 pd.to_numeric(df['tester'], errors='coerce')
 pd.to_datetime(df['tester'], errors='coerce')
 
-# read_csv, to_csv
-df = pd.read_csv(f'{args.path}/raw_calc.csv',sep=r'\\\\001',dtype=np.dtype('object')) # dtype = object reads values either a string or nan
-df.to_csv(f'/mnt/gc/data/raw_calc.csv',sep='~',quotechar='"',index=False, quoting=csv.QUOTE_MINIMAL)
-
 # replace values with nan
 df = df.replace(['', ' ', 'null','None','Null','none','NONE','?','na'], np.nan)
+
+# drop/find duplicates
+rec_df = rec_df.drop_duplicates(subset=['rec','score'],keep='first') # remove duplicates
+rec_df = rec_df[rec_df.duplicated(subset=['rec','score'],keep=False)] # keep only duplicates
+rec_df = rec_df[~rec_df.duplicated(subset=['rec','score'],keep=False)] # keep only non-duplicates
+
+# simple way to find duplicate occurances of data in a log version df
+match_ct = match['sm_id'].value_counts()
+updates = match[match['sm_id'].isin(match_ct[match_ct>1].index)].sort_values(by='sm_id')
 
 # for multiple columns
 for bool_col in [k for k,v in remap.items() if v in [k for k,v in uploaded_types.items() if v['type'] == 'boolean']]:
@@ -142,7 +149,7 @@ parser.add_argument('--sample', type=str, default='0')
 parser.add_argument('--gzip', type=str, default='t')
 args = parser.parse_args()
 
-# fake args for use in notebook
+# fake args for use in notebook to test scripts
 class Args():
     def __init__():
         pass
@@ -156,7 +163,8 @@ args.vpc = 'stg'
 args.sample = '0'
 
 # formatting
-f'{args.vpn}'
+columns = '(origin_id serial primary key, '+' text, '.join([c for c in df.columns if 'origin_id' not in c]) + ' text);'
+create_cmd = f'''-c "create table if not exists {table} {columns}"'''
 
 '.26' = '{:.2f}'.format(.235872)
 '01' = '{:02d}'.format(1)
@@ -214,17 +222,48 @@ import boto3
 client = boto3.client(service_name='athena',region_name='us-east-1')
 client.start_query_execution(QueryString="select * from test.ads_log_s3 where dy = '02' and mon = '02' and yr = '2017'",ResultConfiguration={'OutputLocation':'s3://bucket/path/'})
 
-# slow for bulk inserts
+# quicker method
+
+
+# s3
+def load_csv_from_s3(args,b=f'teams-{args.vpc}-com',p=f'whatever/more.tsv'):
+    s3 = boto3.resource('s3')
+    return pd.read_csv(StringIO(s3.Object(b,p).get()['Body'].read().decode('latin-1')),sep='\t')
+
+def load_json_from_s3(args,b=f'teams-{args.vpc}-com',p=f'admteam/common/{args.vpc}_config.json'):
+    s3 = boto3.resource('s3')
+    return json.loads(s3.Object(b,p).get()['Body'].read().decode('utf-8'))
+
+def save_to_s3(args,b=f'teams-{args.vpc}-com',p=f'whatever'):
+    s3 = boto3.resource('s3')
+    s3.Bucket(f'teams-{args.vpc}-sessionm-com').upload_file(f'{args.path}/{}',f'{args.s3_path}/raw_2019-02-12_2019-02-14.csv')
+    # s3.Bucket(b).upload_file(f'/mnt/gc/data/raw_2019-02-12_2019-02-14.csv',f'{p}/raw_2019-02-12_2019-02-14.csv')
+
+def save_to_s3(args,file):
+    s3 = boto3.resource('s3')
+    s3.Bucket(f'teams-{args.vpc}-sessionm-com').upload_file(f'{args.path}/{file}',f'{args.s3_path}/{file}')
+
+# pandas + postgres query
 import psycopg2 as pg
 import pandas.io.sql as psql
-from sqlalchemy import create_engine
-from sqlalchemy.types import NVARCHAR
-engine = create_engine(f'postgresql+psycopg2://{job_config["db"]["user"]}:{job_config["db"]["password"]}@{job_config["db"]["host"]}/{job_config["db"]["dbname"]}')
-df.to_sql('greyhound_integration_wellbiz_customer_data',engine,index=False,if_exists=args.if_exists,chunksize=int(args.chunksize))
 
-# use psql via cmdline to have quicker performance
-psql_cmd_down = f'''PGPASSWORD='{config["wellbiz_redshift"]["password"]}' psql -A -F '\\\\001' -h{config["wellbiz_redshift"]["host"]} -p{config["wellbiz_redshift"]["port"]} -U{config["wellbiz_redshift"]["user"]} -d{config["wellbiz_redshift"]["database"]} -f {args.query} -o {args.path}/raw_{today}.csv -v v_start={args.start} -v v_end={args.end}'''
+# query
+def run_postgres_query(config,query):
+    conn = pg.connect(dbname=config['database'], user=config['user'], password=config['password'], host=config['host'])
+    return psql.read_sql(query,conn)
+
+# slow for bulk (500k+ rows) inserts
+from sqlalchemy import create_engine
+
+def insert_postgres(args,job_config,df):
+    engine = create_engine(f'postgresql+psycopg2://{job_config["db"]["user"]}:{job_config["db"]["password"]}@{job_config["db"]["host"]}/{job_config["db"]["dbname"]}')
+    df.to_sql('table',engine,index=False,if_exists=args.if_exists,chunksize=int(args.chunksize))
+
+# use psql via cmdline to have quicker performance for bulk uploads
+psql_cmd_down = f'''PGPASSWORD='{config["redshift"]["password"]}' psql -A -F '\\\\001' -h{config["redshift"]["host"]} -p{config["redshift"]["port"]} -U{config["redshift"]["user"]} -d{config["redshift"]["database"]} -f {args.query} -o {args.path}/raw_{today}.csv -v v_start={args.start} -v v_end={args.end}'''
 os.system(psql_cmd_down)
+
+
 
 # ************************************************************************************************************* #
 # pytorch

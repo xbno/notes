@@ -194,7 +194,28 @@ normalizing:
     prior to inputting since you'll normolize the data to itself and lose the
     learning the pretrained model has built. instead
 
-# lesson 4
+    # lesson 4
 
-language model:
-    a model that learns to predict the next word of the sequence
+    language model:
+        a model that learns to predict the next word of the sequence, nearly useless on its own
+
+    typical approach:
+        1. take a full wiki language model
+        2. finetune the model to the specific language corpus (imdb reviews)
+        3. use the language model to create a classifier which will output the answers.
+            requires the same vocab as the finetuned lnaguage model (#2)
+
+    typical acc with a lanuague model:
+        for specific domain like legal or medical acc can be >= .5
+        for imdb reviews acc ~.3 is pretty good
+
+    numericalization:
+        basically tokenize words
+        do
+
+    language models (rnns in general?):
+        encoder - the bit that learns how to undertsand the sentance so far (context?)
+        generater - the bit that learns how to predict the next word
+
+    tabular data in deeplearning:
+        lessens the requirement of making

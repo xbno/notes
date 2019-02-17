@@ -33,8 +33,10 @@ learn()
 .recorder.plot()
     display lr curve
 
+#-######################-#
+#       lesson 1
+#-######################-#
 
-# notes
 high loss predictions
     ones that our model is most confident in but got wrong
 
@@ -74,7 +76,9 @@ recommended to seed prior to running the image data bunch so it picks a repeatab
 if you find activation maps within a convnet that produces zeros for a lot of different
     inputs, you probably have deadfilters. this is a symptom of high learning rates
 
-# lesson 2
+#-######################-#
+#       lesson 2
+#-######################-#
 
 tensor
     rank 1 tensor: torch.tensor(np.array([1,2,3]))
@@ -119,7 +123,9 @@ architecture:
 parameters (weights or coeficients):
     are the numbers that you're updating
 
-# lesson 3
+#-######################-#
+#       lesson 3
+#-######################-#
 
 pytorch dataset/fastai databunch logical structure is:
     torch.utils.DataSet() is used by torch.utils.data.DataLoader() is used by fastai.
@@ -134,12 +140,20 @@ fastai DataBlock api:
 tfms get_transforms():
     filp_vert = True
 
+last layer choices:
+    sigmoid:
+        makes each neuron in the last layer independent of one another. therefore
+        one could have a score of .992 and another with a score of .995
+    softmax:
+        normalizes all neuron values in the last layer to add up to 1, making
+        the output an interpretable probability
+
 accuracy:
     single-class:
         with a standard single class problem there will be n outputs of the model
-        each will corespond to the probability (because the last layer is a sigmoid)
+        each will correspond to the confidence (because the last layer is a sigmoid)
         of the class. therefore you use an argmax to find the most likely class based
-        on the class with the highest probability
+        on the class with the highest confidence
         func: accuracy
     multi-class:
         with a multi class problem there will be numerous outputs each that an image
@@ -194,28 +208,31 @@ normalizing:
     prior to inputting since you'll normolize the data to itself and lose the
     learning the pretrained model has built. instead
 
-    # lesson 4
+# lesson 4
 
-    language model:
-        a model that learns to predict the next word of the sequence, nearly useless on its own
+language model:
+    a model that learns to predict the next word of the sequence. at this point
+    i think of this type of training as learning the fundamentals of words/sentace
+    structure. kinda like how a pretrained resnet34 has learned the low level
+    edge detectors, gradient shadows, etc in the first conv layers.
 
-    typical approach:
-        1. take a full wiki language model
-        2. finetune the model to the specific language corpus (imdb reviews)
-        3. use the language model to create a classifier which will output the answers.
-            requires the same vocab as the finetuned lnaguage model (#2)
+typical approach:
+    1. take a full wiki language model
+    2. finetune the model to the specific language corpus (imdb reviews)
+    3. use the language model to create a classifier which will output the answers.
+        requires the same vocab as the finetuned lnaguage model (#2)
 
-    typical acc with a lanuague model:
-        for specific domain like legal or medical acc can be >= .5
-        for imdb reviews acc ~.3 is pretty good
+typical acc with a lanuague model:
+    for specific domain like legal or medical acc can be >= .5
+    for imdb reviews acc ~.3 is pretty good
 
-    numericalization:
-        basically tokenize words
-        do
+numericalization:
+    basically tokenize words
+    do
 
-    language models (rnns in general?):
-        encoder - the bit that learns how to undertsand the sentance so far (context?)
-        generater - the bit that learns how to predict the next word
+language models (rnns in general?):
+    encoder - the bit that learns how to undertsand the sentance so far (context?)
+    generater - the bit that learns how to predict the next word
 
-    tabular data in deeplearning:
-        lessens the requirement of making
+tabular data in deeplearning:
+    lessens the requirement of making

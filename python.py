@@ -167,6 +167,7 @@ columns = '(origin_id serial primary key, '+' text, '.join([c for c in df.column
 create_cmd = f'''-c "create table if not exists {table} {columns}"'''
 
 '.26' = '{:.2f}'.format(.235872)
+'.26' = f'{.235872}'
 '01' = '{:02d}'.format(1)
 '100203' = '{:.0f}'.format(100203.021)
 
@@ -206,6 +207,14 @@ with open('/Users/gcounihan/Downloads/user_item_recommendations.json') as f:
 with open('/vol/pipeline/v2/lightmf_analysis.txt', 'w') as fp:
     json.dump(user_item_recommended_nonpurch, fp)
 
+# read/write json gzip
+import gzip
+import json
+with gzip.GzipFile(jsonfilename, 'w') as fout:
+    fout.write(json.dumps(data).encode('utf-8'))
+with gzip.GzipFile(jsonfilename, 'r') as fin:
+    data = json.loads(fin.read().decode('utf-8'))
+
 # read/write pickles
 with open('filename.pickle', 'wb') as handle:
     pickle.dump(a, handle, protocol=pickle.HIGHEST_PROTOCOL)
@@ -214,7 +223,7 @@ with open('filename.pickle', 'rb') as handle:
 
 
 # ************************************************************************************************************* #
-# data to the cloud, boto3, sqlalchemy
+# data to the cloud, boto3, sqlalchemy, s3fs
 # ************************************************************************************************************* #
 
 # slow for large queries
@@ -222,14 +231,10 @@ import boto3
 client = boto3.client(service_name='athena',region_name='us-east-1')
 client.start_query_execution(QueryString="select * from test.ads_log_s3 where dy = '02' and mon = '02' and yr = '2017'",ResultConfiguration={'OutputLocation':'s3://bucket/path/'})
 
-# quicker method
-
-
-# s3
+# boto3 s3
 def load_csv_from_s3(args,b=f'teams-{args.vpc}-com',p=f'whatever/more.tsv'):
     s3 = boto3.resource('s3')
     return pd.read_csv(StringIO(s3.Object(b,p).get()['Body'].read().decode('latin-1')),sep='\t')
-
 def load_json_from_s3(args,b=f'teams-{args.vpc}-com',p=f'admteam/common/{args.vpc}_config.json'):
     s3 = boto3.resource('s3')
     return json.loads(s3.Object(b,p).get()['Body'].read().decode('utf-8'))
@@ -238,10 +243,24 @@ def save_to_s3(args,b=f'teams-{args.vpc}-com',p=f'whatever'):
     s3 = boto3.resource('s3')
     s3.Bucket(f'teams-{args.vpc}-sessionm-com').upload_file(f'{args.path}/{}',f'{args.s3_path}/raw_2019-02-12_2019-02-14.csv')
     # s3.Bucket(b).upload_file(f'/mnt/gc/data/raw_2019-02-12_2019-02-14.csv',f'{p}/raw_2019-02-12_2019-02-14.csv')
-
 def save_to_s3(args,file):
     s3 = boto3.resource('s3')
     s3.Bucket(f'teams-{args.vpc}-sessionm-com').upload_file(f'{args.path}/{file}',f'{args.s3_path}/{file}')
+
+# s3fs
+import s3fs
+s3 = s3fs.S3FileSystem()
+raw_s3_file = f"s3://teams-{args.vpc}-sessionm-com/{args.s3_raw_path}/raw.csv"
+core = pd.read_csv(raw_s3_tmp_file, sep="~", header=0, na_values=na_values, compression='gzip', dtype=np.dtype('object'))
+with s3.open(raw_s3_file, 'w') as f:
+    df.to_csv(f, sep='~', index=False, compression='gzip')
+with s3.open(raw_s3_file, 'r') as f:
+    e = pd.read_csv(f, sep='~')
+
+with s3.open('s3://teams-stg-sessionm-com/admteam/integration/wellbiz/data/std_apd_email_50000a.json', 'r') as f:
+    d = json.load(f)
+with s3.open('s3://teams-stg-sessionm-com/admteam/integration/wellbiz/data/std_apd_email_50000a.json', 'w') as f:
+    json.dump(d, f)
 
 # pandas + postgres query
 import psycopg2 as pg

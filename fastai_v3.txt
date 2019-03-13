@@ -208,7 +208,9 @@ normalizing:
     prior to inputting since you'll normolize the data to itself and lose the
     learning the pretrained model has built. instead
 
-# lesson 4
+#-######################-#
+#       lesson 4
+#-######################-#
 
 language model:
     a model that learns to predict the next word of the sequence. at this point
@@ -236,3 +238,20 @@ language models (rnns in general?):
 
 tabular data in deeplearning:
     lessens the requirement of making
+
+#-######################-#
+#       Bert
+#-######################-#
+
+link to bert: https://ai.googleblog.com/2018/11/open-sourcing-bert-state-of-art-pre.html
+
+context-free vs contextual:
+    word2vec and glove are context free - meaning they create the same embedding for the word
+        bank whether it is used a 'bank fo a river' or 'bank heist'
+    bert (and some other pre-trained representations) are contextual - meaning they generate
+        a representaion for each word based on the other words in the sentence. while a uni-directional
+        model would only see the previous words of the context, a bidirectional model (like bert)
+        uses both words prior to and after the word of interest to generate its representation.
+
+zero-shot:
+    zero-shot learning is

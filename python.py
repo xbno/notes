@@ -38,7 +38,7 @@ pd.options.display.float_format = '{:.2f}'.format
 sns.distplot(..., hist_kws={'log':True})
 
 # ************************************************************************************************************* #
-# pandas + numpy
+# pandas + numpy + scipy
 # ************************************************************************************************************* #
 
 # read_csv, to_csv
@@ -61,6 +61,9 @@ rec_df = rec_df[~rec_df.duplicated(subset=['rec','score'],keep=False)] # keep on
 # simple way to find duplicate occurances of data in a log version df
 match_ct = match['sm_id'].value_counts()
 updates = match[match['sm_id'].isin(match_ct[match_ct>1].index)].sort_values(by='sm_id')
+
+# build up a version of a df from all nans to filled in values
+df_a.combine_first(df_b)
 
 # for multiple columns
 for bool_col in [k for k,v in remap.items() if v in [k for k,v in uploaded_types.items() if v['type'] == 'boolean']]:
@@ -118,6 +121,12 @@ print(df.shape[0] - df_no_outliers.shape[0],'many customers removed')
 # split into equal parts
 dfs = [df for df in np.array_split(df,3)]
 
+# ttest pvalue
+from scipy import stats
+a = player_df[player_df['segment'] == '25_50_control']['huggies_product_total']
+b = player_df[player_df['segment'] == '25_50_email_5000pts']['huggies_product_total']
+stats.ttest_ind(a,b)
+
 # ************************************************************************************************************* #
 # sys, os, and file manipulation
 # ************************************************************************************************************* #
@@ -161,6 +170,23 @@ args.map = 'full_inc_mapping_2'
 args.calc = 'full_inc_calc_2'
 args.vpc = 'stg'
 args.sample = '0'
+
+# logging
+def get_logger(name,logfile):
+    log_format = '%(asctime)s - %(name)8s - %(levelname)5s - %(message)s'
+    logging.basicConfig(level=logging.DEBUG,
+                        format=log_format,
+                        filename=logfile,
+                        filemode='a') # appends
+    console = logging.StreamHandler()
+    console.setLevel(logging.DEBUG)
+    console.setFormatter(logging.Formatter(log_format))
+    logging.getLogger(name).addHandler(console)
+    return logging.getLogger(name)
+
+logger = get_logger('inc_GR.py','/data/20190318.log')
+logger.info('msg')
+logger.info(f'{i}: {(datetime.now() - loop_start_time).seconds} sec - new record matches: {len(tf[f"rule_{i}_all"][tf[f"rule_{i}_all"]])}')
 
 # formatting
 columns = '(origin_id serial primary key, '+' text, '.join([c for c in df.columns if 'origin_id' not in c]) + ' text);'
@@ -281,7 +307,6 @@ def insert_postgres(args,job_config,df):
 # use psql via cmdline to have quicker performance for bulk uploads
 psql_cmd_down = f'''PGPASSWORD='{config["redshift"]["password"]}' psql -A -F '\\\\001' -h{config["redshift"]["host"]} -p{config["redshift"]["port"]} -U{config["redshift"]["user"]} -d{config["redshift"]["database"]} -f {args.query} -o {args.path}/raw_{today}.csv -v v_start={args.start} -v v_end={args.end}'''
 os.system(psql_cmd_down)
-
 
 
 # ************************************************************************************************************* #

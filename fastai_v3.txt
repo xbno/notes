@@ -9,6 +9,22 @@ sudo docker run --runtime=nvidia -d -p 8888:8888 -v /home/xbno/course-v3/data:/d
 find / -name "stage-1-50*"
 docker container stop $(docker container ls -aq)
 docker container rm $(docker container ls -aq)
+service docker restart
+
+# on amazon gpu
+sudo service docker stop
+sudo nano /etc/docker/daemon.json
+{
+    "data-root": "/pnt/docker",
+}
+sudo service docker start
+sudo docker run --runtime=nvidia -d -p 8888:8888 -v /pnt:/data --shm-size 26G paperspace/fastai:1.0-CUDA9.2-base-3.0-v1.0.6
+
+# locally
+conda install seaborn, graphviz
+conda install opencv
+conda install -y bcolz
+
 
 # functions
 doc()

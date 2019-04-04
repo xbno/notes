@@ -256,9 +256,189 @@ language models (rnns in general?):
     encoder - the bit that learns how to undertsand the sentance so far (context?)
     generater - the bit that learns how to predict the next word
 
-tabular data in deeplearning:
+tabular data in deeplearning
     lessens the requirement of hand creating features
     pinterest changed over their models from xgboost to deeplearning
     all thats really required is to define categorical and continuous features
         categoricals will be replaced with embeddings
         continuous can be input directly
+
+#-######################-#
+#       lesson 5
+#-######################-#
+
+parameters:
+    the weight tensors of the nueral net
+    these will be random when new
+    these are pre-set (pre-learned) when taking a previous trained net and finetuning it
+        the lower layer weights are more fundamental
+        the layers closer to the output are more specific to the pretrained net goal
+
+activations:
+    inputs, outputs
+    the calculated values that arise from either matrix multiplications or nonlinearities
+
+activation functions:
+    element-wise functions that add non-linearity to nns
+    they don't matter so much, so relu is standard
+
+    relu - zero negatives, multiply by 1 for larger than 1
+    sigmoid -
+    cross entropy
+
+back propogation:
+    calculate the gradients for all weights
+    weights - gradients * learning rate
+
+discriminative learning rates:
+    mainly used with transfer learning
+    basically splitting the architecture of a model then assigning
+        lower learning rates to the earlier layers
+        higher learning rates to the later layers
+
+learning rates in fastai (divided by 3 because of something to do with batchnorm)
+    .001 (1e-3)
+        all layers with the same learning rate
+    slice(1e-3)
+        last layer group at lr=1e-3
+        rest at lr=(1e-3/3)
+    slice(1e-5,1e-3) will train the
+        last layer group at lr=1e-3
+        middle layer groups evenly split between 1e-3 and 1e-5
+        first layer group at lr=1e-5
+
+layer groups
+    for pretrained architetures the new layers are 1 group
+    the rest of the model is split into 2 groups by default
+
+afine function:
+    not always matrix multiplication between layers
+    but they may be linear functions (like cnn layers where weigths are tied together)
+    both are afine functions
+
+embeddings - array lookup vs one-hot encoding
+    one-hot encoded matrix times an embedding matrix outputs the correct user embeddings
+    array lookup does the same thing but uses much less memory because since it doesn't have to mulitply anyting
+    always use the array lookup version which is really just embedding
+
+bias
+    add value of global likeness or badness to movies etc
+    instead of adding a frozen weight of 1 to the embedding libraries specifically add bias
+    can reduce overall error even further
+
+latent factors:
+    since the embeddings
+
+epoch:
+    means your network is looking at every input once
+    10 epochs means your looking at all you input data 10x times
+
+remember:
+    if you put an afline function with another afine function you get nothing
+    you always need a non-linearity between layers or else you can't learn anything
+
+sigmoid collab range:
+    since sigmoids assomtote at whateveer value you set, they have a very hard time ever reaching it
+    so set the sigmoid function to be a little lower a little higher than the values
+
+embeddings:
+    recommended to reduce the embeddings down to a resonable size before looking for similars
+    very often a good idea to chuck weights from nueral nets then put them thru pca then analyze
+    are just really cool in terms of learning interesting similarities between things
+    good idea is to train them in one space then use them elsewhere like standard RF etc
+
+weight-decay:
+    type of regularization
+    sounds exactly like l2 reg where lambda is just wd
+    typically set to .01 but .1 works too, might just not ever overfit and therefore never quite get perfect
+
+overfitting:
+    standard idea of less complex is less parameters via stats
+    but really counting the number of parameters to determine complexity is all wrong
+    more params = more non-linearities which is good
+    penalize complexity is regularization
+        summing upp all params doesn't wwork because some are negative
+        thats why l1 is sum of abs of params
+        and why l2 is params**2
+    thing is that what if your best loss is actually setting all the params to 0 since theyre being **2
+
+data bunch:
+    a convinience wrapper to take a full dataset of x,y and create tuples of them
+
+minibatch:
+    a set of the full data chunked into a batch size of 64 or whatever
+
+online gradient decent:
+    every sample is used in gradient decent
+
+gradient decent:
+    how far your prediction was off from your actual / how far your change was
+
+momentum:
+    .9 is most common
+    changes how the gradient is updated where it uses .1 * the derivative of this time and .9 * the last value
+    basically an exponentially weighted moving average of the last few values
+
+rmsprop:
+
+
+adam:
+    momentum + rmsprop
+    keeps track of the exponential moving average of the steps
+    and keeps track of the exponential moving average of the gradient
+
+learning rate per batch:
+    start small because the weights are random so we want to move slowly
+        and if you jump around because of the big gradients related to the random weights they'll throw you off
+    then when you get to sensable weights you want to have a higher learning rate where you end up moving in the right direction
+    then as you get close the final answer you want to start slowing down to hone in
+    when you have this low learning rate but you keep going in the right direction you might as well go faster aka high momentum
+    and then if your jumping really far with your learning rate, don't compound it with high momentum, because it might throw you off
+    one_cycle does this where it can let you do super convergence
+
+fastai losses
+    doesn't show you actual loss
+    rather shows the exponentially weighted moving average of the loss so its easier to visualize
+
+cross entropy loss:
+    penalizes very confident wrong predictions highly
+    requires activations coming into the loss function to add up to 1
+        because they're all probabilities
+    meaning you have to use a softmax non-linearity of your last layer
+
+softmax:
+    does e ** activations (becasue that'll make them all positive)
+    then sums those numbers and divides them all by it
+    sinlge lable multiclass classification
+
+pytorch actually does softmax cross entropy loss
+this means you might find your classifier outputs some crazy negs and pos numbers, it probably just needs a softmax at the end of it to use it
+
+regularization in nueral nets:
+    weight decay
+    batchnorm
+    dropout
+    data augmentation
+
+#-######################-#
+#       lesson 6
+#-######################-#
+
+
+
+#-######################-#
+#       Bert
+#-######################-#
+
+link to bert: https://ai.googleblog.com/2018/11/open-sourcing-bert-state-of-art-pre.html
+
+context-free vs contextual:
+    word2vec and glove are context free - meaning they create the same embedding for the word
+        bank whether it is used a 'bank fo a river' or 'bank heist'
+    bert (and some other pre-trained representations) are contextual - meaning they generate
+        a representaion for each word based on the other words in the sentence. while a uni-directional
+        model would only see the previous words of the context, a bidirectional model (like bert)
+        uses both words prior to and after the word of interest to generate its representation.
+
+zero-shot:
+    zero-shot learning is

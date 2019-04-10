@@ -120,8 +120,13 @@ stocastic gradient decent:
         y_hat = x[rand_idx]@a
         loss = mse(y[rand_idx], y_hat)
 
-sgd vs gd:
-    the max learning rate appropriate will change based on the batch size etc.
+minibatch sgd vs sgd vs gd:
+    minibatch sgd and updates params every minibatch, goldilocks version decent amount of updates decent amount confidence in them
+    sgd updates params each and every sample given, lots of updates fuctuating all the time
+    gd updates params after all samples are learned from leading to 'globally good' updates but very few updates
+
+batch size:
+    the max learning rate appropriate will change based on the batch size (larger batchsize should mean larger maintainable lr)
     meaning choosing whats in your batches is REALLY important (maybe this is already done?)
     which is why lightfm's warp was sneaky good, because it chose only to do updates on samples
         that were very wrong. look into this
@@ -153,6 +158,11 @@ pytorch dataset/fastai databunch logical structure is:
         combines dataset into a minibatch ready for model consumption
     DataBunch:
         composed of two DataLoaders for train and validation sets
+
+train/valid/test:
+    train has labels and is used to train your model (usually like 80-90% of labeled data)
+    valid has labels and is used to 'test' your model (usually like 10-20% of labeled data)
+    test doesn't have labels and is used for inference or to generate answers for kaggle or to somebody who has held out the labels to judge algos
 
 fastai DataBlock api:
     creates everything fort he databunch object
@@ -424,7 +434,155 @@ regularization in nueral nets:
 #       lesson 6
 #-######################-#
 
+tabluar data:
+    break everything into datetime parts
 
+dropout:
+    for each minibatch throw away a percentage of the activations
+    common value of p (drop perc) is .5
+    typically only in the hidden layers, not the input or output layers
+    goal to make no one activation or set of activations memorize an input to output ultimately regularizing
+    needs to be activated during trianing but NOT during inference aka prediction
+    instead of doing this pytorch and other networks actually multiply all weights during training time by 1/p
+    makes it so that you don't actually need to do anything during inference
+
+batchnorm:
+    bit of regularization
+    bit of trining helper
+    aids in reducing bumpyness of the loss vs epoch relationship
+    ultimately lets you use higher learning rates
+    works in minibatches
+    its a layer that takes in activations and adds both multiplicative bias and added bias
+    ultimately makes it easier to scale layers influence up or down by these two learnable parameters
+    also its key that it uses momentum when determining the mean and variance it uses to calc bn
+        takes an exponentially wieghted average of the mean and variance so they don't bounce around so much between mini batches
+        but the mean and variance in jeremys words aren't the most important part of bn. so perhaps you could get away with just the biases
+    smaller momentum leads to less bouncing of the mean and variance so it has less of a regularization affect
+
+data augmentation:
+    jeremy is most excited about it as a regularization method - mainly because there haven't eben definative studies on the matter
+    nobody is doing data aug in text data or tabular or medical genomics anything like that
+    decreases data req by like 5-10x because its basically free extra labeled data
+
+convs:
+
+average pool:
+
+hook:
+
+#-######################-#
+#       lesson 7
+#-######################-#
+
+data blocks api:
+    1. create an item list (il)
+        list of items that it will create data from
+        case of images its a list of images
+        case of df its a list of samples
+        il.items[0] gets you the first sample
+    2. split data into train vs validation (sd)
+        .split_by_folder .no_split for no validation
+        cannot skip entirely
+    3. label it and create a label list (ll)
+        create the labels via methos like
+        label_from_folder label_from_re
+    4. setup transforms
+        set transforms for both training and validation
+        .transforms(([train transforms],[validation transforms]))
+        these are applied when grabbing the data from disk (at least for images)
+    5. create a data bunch
+        set your batch size
+        normalize data if your not using a pretrained model
+        data.train_ds is a data set
+        data.train_ds[0] will give an x and a y sample
+        data.one_batch() will give a transformed data batch
+        data.show_batch() will show samples and their labels
+
+deep residual networks and learning (paper):
+    they noticed that the deep (large param space) network performed worse than the shallonw one and said hmm
+    figured he could skip all the conv layers at the end by putting a skip connection in and that the network would
+        shouldn't perform any worse than the original smaller network
+    skip connection is one where the input is fed around the layers so the network in theory the model can use
+        set the weights to zero in those layers and bypass them altogether
+        by adding them to the outputs (+)
+    skip connections or res-blocks are revolutionary and pretty much can always outperform networks without (?)
+
+fastai conv_layer:
+    conv batchnorm relu chunks
+
+visualizing the loss landscape (paper):
+    they plotted loss over a x,y (two dimensions probably pca'ed down)
+    then showed that res-blocks drastically smooth the loss landscape proving why res-blocks really work
+
+resnets:
+    genuinely really simple and easy to implement
+
+densenets:
+    same concept as res-blocks except instead of adding them to the output of a layer they're concatted
+    concats each input to the next output essentially keeping the original input features the entire way
+        through the layers
+    very memory intensive but typically few params
+    they work well with segmentation because they keep the input
+    in practice theres something else going on that downsamples the dense concatted input since its a diff size than the input to the next layer
+
+refactoring:
+    do if often and consistenly, you'll make less mistakes when things are bundled
+
+unet:
+    imaging segmentation model that uses skip connections (concatting) across the down and upsampling parts
+        pre res-net which is pretty clever
+    downsampling part reduces pic down to is conv interpretation to somehting really dense like 512 x 7 x 7
+    upsampling part increases each channel by conv'ing it against a larger version of the channel
+        padding with pad pixels in between
+        nearest neighbor interpolation
+
+note:
+    generally you want as much interactions between added or concatted inputs with the outputs of that channel as possible
+
+gan to generate higher quality pics (decrappify):
+    basic idea is to start with high qual pics, transform them into crappy versions of the same thing
+    then train a model on the crappy input pic with the high quality output image as the 'truth' image
+
+generative model:
+    output is an image that created as opposed to a number of class
+
+think about how loss function relates to your goal:
+    *needs to mathmatically descibe what we want
+    mse of pred to truth on pixel level gets the model to take care of really large issues in input image
+        but doesn't solve the low to high res problem since the mse between pixels isn't a great metric
+    before watching the rest im thinking that a loss function that includes the error of the min and max of small regions of the photo would be in the right direction
+
+gan:
+    actually does this by using a loss function that calls another model
+    so the model you call is actually trying to classify the prediction and the truth as whether theyre the truth or the generated image
+    so by using a critic t as the loss, and if we can fool it into thinking the generated image is teh truth, then its gotta be pretty good at generating images
+    the critic is really just a binary cross entropy loss function
+    you need to bounce between training the generator to create images and training the critic into being a good critiquer
+    to make it work you need to stack losses of both the critic and the mse of pixels
+        because otherwise you could be generating really good images that have no similarity to the original picture
+    since each of those two losses are on different scales you need to get your pixel loss to be on the same order as the critic
+        usually multiply by 50 to 200
+    also since your updating the critic to get better and better as you go its hard to determine how well its working because the loss will be ablout the same over time
+        so the best way to determine how well you're doing is by taking a look at the batches over the course of training
+
+unets:
+    use when the resolution of the input and output is roughly the same
+
+reclaiming gpu mem:
+    set something you know is using a lot of mem to = None
+    then do gc.collect() to garbage collect
+
+feature losses:
+    grab some middle activations of the generator model and compare the pred and thruth activations of that layer and do mse on it
+    using the idea that the features are just as important as the actual loss
+    basically its trying to judge a prediction on the featuers which will represent the pic
+
+generally when joining layers they're either added or concatted
+
+jeremys advice:
+    do something. 100% through
+    when you get to that 80% finished point, add a readme make sure you have a proper install script
+    finish things completely.
 
 #-######################-#
 #       Bert

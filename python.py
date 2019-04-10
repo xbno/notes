@@ -5,6 +5,11 @@ pd.__version__
 # show file location
 pd.__file__
 
+# install fastai
+conda create --name fastai python=3.7
+conda update --prefix /Users/xbno/anaconda3 anaconda
+conda install fastai -c fastai -c pytorch -c conda-forge
+
 # ************************************************************************************************************* #
 # in jupyter notebooks/lab
 # ************************************************************************************************************* #

@@ -113,11 +113,29 @@ def format_number_to_int(x):
     else:
         return '{:.0f}'.format(float(x))
 
+# referencing a string dictionary or json in df
+edf['json'] = edf['json'].apply(lambda x: json.loads(x))
+edf['external_id'] = edf['json'].apply(lambda x: x['external_id'])
+
 # find only numbers
 def only_nums(x):
     return re.findall('(\d*)',x)[0]
 combined_df['workphone'] = combined_df['workphone'].apply(only_nums)
 
+# extract strings regex from df
+error_codes = {'age':'age .* is out of range',
+        'zip_usa':'unrecognized zip .* for country USA'}
+
+error_values = {'age':'age (.*) is out of range',
+        'zip_usa':'unrecognized zip (.*) for country USA'}
+
+for code,error in error_codes.items():
+    edf.loc[edf['error'].str.contains(error,regex=True),'error_code'] = code
+for code,error_value in error_values.items():
+    edf[f'{code}_error'] = edf['error'].str.extract(error_value)
+
+
+# quintile
 q = df.sum(axis=1).quantile(0.99)
 print(q, 'is the cuttoff')
 df_no_outliers = df[df.sum(axis=1).map(lambda x: x < q)]

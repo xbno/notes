@@ -5,14 +5,14 @@ pd.__version__
 # show file location
 pd.__file__
 
+# ************************************************************************************************************* #
+# in jupyter notebooks/lab
+# ************************************************************************************************************* #
+
 # install fastai
 conda create --name fastai python=3.7
 conda update --prefix /Users/xbno/anaconda3 anaconda
 conda install fastai -c fastai -c pytorch -c conda-forge
-
-# ************************************************************************************************************* #
-# in jupyter notebooks/lab
-# ************************************************************************************************************* #
 
 # add conda env as kernel to lab or notebook
 conda install ipykernel
@@ -337,3 +337,8 @@ conv = torch.nn.Conv1d(5,1,1,padding=2,bias=False)
 filt = torch.nn.Parameter(torch.Tensor([[[0],[1],[0],[0],[0]]]))
 conv.weight = filt
 conv(torch.Tensor([0,1,0,0,0]).view(1,5,1))
+
+# fastai 1.0.51
+il = ItemList.from_df(df[['item_id','label']],cols=['item_id'],label_cls=MultiCategoryList)
+sd = il.split_by_rand_pct()
+data = sd.label_from_df('label',label_delim=' ')

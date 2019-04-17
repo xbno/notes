@@ -56,6 +56,29 @@ learn()
 #       lesson 1
 #-######################-#
 
+fine grained classification:
+classification between categories that are very similar like facial recog or between breeds
+    when your aim is to classify differences between things of the same class
+    http://www.cs.umd.edu/~djacobs/CMSC733/FineGrainedClassification.pdf
+
+size of images:
+    ability of gpus to calculate fast is to do the same thing to a bunch of same sized items at once
+    any input whether image or text or else needs to be same size input tensor for a given model
+    default to size 224, typical setting
+
+pixels:
+    0-255 range
+    require normalize
+
+transfer learning:
+    the focus of the course and jeremys work recently
+    take a model that already knows how to do something pretty well and then make it do your problem very well
+    ie. use resnet34 which has been pretrained to classify 1000 categories in imagenet
+        meaning that it already knows what animals, and pets, and images look like already
+        then fine tune it to classify the types of breeds of cats or dogs
+    by doing this you can train models in 1/100th the time it would take with 1/100th or less data than in regular (from scratch training)
+
+ 
 high loss predictions
     ones that our model is most confident in but got wrong
     a subset of examples that we can use to intrepret how the model is performing

@@ -9,6 +9,8 @@ pd.__file__
 conda create --name fastai python=3.7
 conda update --prefix /Users/xbno/anaconda3 anaconda
 conda install fastai -c fastai -c pytorch -c conda-forge
+conda install ipykernel
+python -m ipykernel install --user --name fastai
 
 # ************************************************************************************************************* #
 # in jupyter notebooks/lab

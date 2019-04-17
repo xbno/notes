@@ -106,6 +106,9 @@ train loss:
     or reduce regularization by adding weight ecay, data aug or
     ***this isn't stated by all in deep learning, so may read otherwise***
 
+good resource for loss:
+    https://stackoverflow.com/questions/34518656/how-to-interpret-loss-and-accuracy-for-a-machine-learning-model
+
 overfitting in DL:
     your error rate improves for a while and then starts getting worse
 

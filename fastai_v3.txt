@@ -78,7 +78,6 @@ transfer learning:
         then fine tune it to classify the types of breeds of cats or dogs
     by doing this you can train models in 1/100th the time it would take with 1/100th or less data than in regular (from scratch training)
 
- 
 high loss predictions
     ones that our model is most confident in but got wrong
     a subset of examples that we can use to intrepret how the model is performing
@@ -626,3 +625,67 @@ context-free vs contextual:
 
 zero-shot:
     zero-shot learning is
+
+
+#-######################-#
+#       MIT
+#-######################-#
+
+google automl:
+    using reinforcement learning to tweak models and change optimization
+    adanet:
+        using reinforcement learning with ensemble with multiple architectures
+
+data augmentatoin:
+    taking the raw data and messing with it to give you much more context of it IRL
+    automl does this - augments data in such a way that it optimizes for accuracy
+    then you can take the optimal data aug method and apply it to other problems
+        transfer learning in a very out of the box way (transfer the policies of augmenting)
+    exciting because it will lead to learning alot from a little
+
+synthetic data:
+    genereate world first then train on actual data
+
+multi-class vs multi-label:
+    multi-class - single label per training example (can only be sunny or cloudy)
+    multi-label - multiple labels per training exampel (can be sunny and cloudy)
+
+brain vs dl:
+    deep learning is synchronous
+    brain learns asynchronously
+
+backprop:
+    he repeatedly talks about backprop being a poor way or the only way of doing things.
+    geoff hinton says there should be a better way
+    i'd really like to dig into evo learning and feature learning (?) where you hook and
+        tie loss on mid points in a network
+    take imagenet photos and first classify them as place, thing, animal type leanring
+    i imagine this is what babies or anyone with a new topic does, they generalize everything, group everything
+
+object detection:
+    naive - create bounding boxes, then classify within them
+    one shot - (yolo) based on features generate and classify in one go
+
+semantic segmentation:
+    classify at the pixel level to create overlays
+    what would semantic segmentation be in language?
+    at the word level, classify which are related to humor vs attention seeking vs deflection?
+    i suppose you need a labeled dataset for semantic segmentation
+    requires a image model (resnet encoder) + upsampling method (unet decoder)
+    so.. would need a language model and some way to upsample back to the same 'space' as the input words
+    would be useful in a business negotiation? to try to read somebody based on their actions/words phrasing?
+
+embeddings:
+    in practice to generate embeddings you want to train your model on a discriminative task
+    by doing so the netowrk is better able to create a rich latent representation as opposed to something that might not suit the task
+
+skip gram:
+    2 words on either side
+    i [am] eating a sandwich
+    [am,i] [am,eating] [am,a
+    input is word embedding, output is probability of being a neighborly word
+
+sequence basd recommendations based on transactions as each input
+
+lex friedman talks
+https://www.youtube.com/watch?v=53YvP6gdD7U

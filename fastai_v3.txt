@@ -631,6 +631,9 @@ zero-shot:
 #       MIT
 #-######################-#
 
+lex friedman talks
+https://www.youtube.com/watch?v=53YvP6gdD7U
+
 google automl:
     using reinforcement learning to tweak models and change optimization
     adanet:
@@ -686,6 +689,3 @@ skip gram:
     input is word embedding, output is probability of being a neighborly word
 
 sequence basd recommendations based on transactions as each input
-
-lex friedman talks
-https://www.youtube.com/watch?v=53YvP6gdD7U

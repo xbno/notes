@@ -25,8 +25,13 @@ import matplotlib
 matplotlib.use('agg')
 %matplotlib inline
 
+# autoreload imports
+%load_ext autoreload
+%autoreload 2
+
 # remove ... in dataframes
-pd.set_option('display.max_columns', None)
+pd.set_option('display.max_columns', 150)
+pd.set_option('display.max_rows', 150)
 pd.set_option('display.expand_frame_repr', False)
 pd.set_option('max_colwidth', -1)
 
@@ -36,6 +41,7 @@ display(HTML("<style>.container { width:98% !important; }</style>"))
 
 # decimal points
 pd.options.display.float_format = '{:.2f}'.format
+
 
 # ************************************************************************************************************* #
 # matplotlib + seaborn
@@ -213,6 +219,10 @@ logger = get_logger('inc_GR.py','/data/20190318.log')
 logger.info('msg')
 logger.info(f'{i}: {(datetime.now() - loop_start_time).seconds} sec - new record matches: {len(tf[f"rule_{i}_all"][tf[f"rule_{i}_all"]])}')
 
+# logging simple one liner at top
+logging.basicConfig(filename='logs.log', level=logging.DEBUG, format="%(asctime)s:%(levelname)s: %(message)s")
+logging.getLogger().addHandler(logging.StreamHandler())
+
 # formatting
 columns = '(origin_id serial primary key, '+' text, '.join([c for c in df.columns if 'origin_id' not in c]) + ' text);'
 create_cmd = f'''-c "create table if not exists {table} {columns}"'''
@@ -222,15 +232,26 @@ create_cmd = f'''-c "create table if not exists {table} {columns}"'''
 '01' = '{:02d}'.format(1)
 '100203' = '{:.0f}'.format(100203.021)
 
+# partial formatting f string
+f"{base_path}/output/smsync/{date_parts}/{{recommendation_model}}---{uparams['segmentation_model']}.json"
+
 # add a,b,c suffix to filename
 letter = chr(ord('a')+i)
 file_to_upload = f'{args.path}/std_apd_email_{args.sample}{letter}.json'
 
-# dates
-datetime.datetime.strptime('20180531', '%Y%m%d')
+# datetimes
+from datetime import datetime, timedelta
 
-# from string to date
-'20180608'.strftime('%Y%m%d')
+# from datetime to string
+today = datetime.now().strftime('%Y-%m-%d')
+
+# from string to datetime
+datetime.strptime('20180531', '%Y%m%d')
+
+# add day
+datetime.strftime(datetime.now()+timedelta(days=1),'%Y-%m-%d')
+
+
 
 # regex
 'datetime.datetime(2018, 7, 1)' = re.search("'start_date': (.+\(.+\))",''''start_date': datetime.datetime(2018, 7, 1),''').group(1)
@@ -247,6 +268,67 @@ b = {'a':1,'b':2,'c':3,'d':4,'h':1,'g':1}
 remap = {}
 remap.update(remap_appended)
 
+# read files
+from glob import glob
+
+df = pd.DataFrame()
+for fp in glob('./*_fill_cnt.csv'):
+    df = pd.concat([df,pd.read_csv(fp)])
+
+# ************************************************************************************************************* #
+# pytest with decorator and class init
+# ************************************************************************************************************* #
+
+"""python -m pytest -v"""
+
+import pytest
+import collections
+import pandas as pd
+import inc_GR_m # located within the same folder as the tests script
+
+@pytest.mark.parametrize("raw_s3_files,todays,init_map_s3_file,expected_map_s3_file,creation_date_col", [
+    # kelly: 3 record on 2019-04-02 should match, however creation_date is the same for all records, so
+    # new record should not become master_sm_id when matching
+    (['s3://teams-ent-sessionm-com/admteam/integration/wellbiz/test_data/tmp/date=2019-04-02/kelly.csv.gz',
+     's3://teams-ent-sessionm-com/admteam/integration/wellbiz/test_data/tmp/date=2019-04-21/kelly.csv.gz'],
+     ['2019-04-02','2019-04-21'],
+     's3://teams-ent-sessionm-com/admteam/integration/wellbiz/test_data/map/date=2019-04-02/kelly_map.csv',
+     's3://teams-ent-sessionm-com/admteam/integration/wellbiz/test_data/map/date=2019-04-22/kelly_map.csv',
+     'creation_date_coalesce'),
+])
+def test_inc_GR_over_time(raw_s3_files, init_map_s3_file, todays, expected_map_s3_file, creation_date_col):
+    "Test incremental golden record matching over time, comparing map_df built over time vs expected_map_df"
+
+    i = 0
+    for raw_s3_file,today in zip(raw_s3_files,todays):
+        if i == 0:
+            df, map_df = inc_GR_m.load_df_and_map(None,raw_s3_file,init_map_s3_file)
+            df = select_creation_date_col(df,creation_date_col)
+        else:
+            df, throw_away_map_df = inc_GR_m.load_df_and_map(None,raw_s3_file,init_map_s3_file)
+            df = select_creation_date_col(df,creation_date_col)
+
+        bf,new_sm_ids = inc_GR_m.inc_GR(df,map_df,today)
+
+        if len(new_sm_ids) > 0:
+            map_df = inc_GR_m.extend_map(map_df,bf,new_sm_ids,today)
+
+        i += 1
+
+    # set/sort so they'll be comparable
+    map_df.reset_index(drop=True,inplace=True)
+    expected_map_df = pd.read_csv(expected_map_s3_file)
+    map_df = map_df.sort_values(by=['updated_at','sm_id'])
+    expected_map_df = expected_map_df.sort_values(by=['updated_at','sm_id'])
+
+    print('map_df',map_df)
+    print('expected_map_df',expected_map_df)
+    assert (map_df.reset_index(drop=True) == expected_map_df.reset_index(drop=True)).all().all()
+
+# ************************************************************************************************************* #
+# data locally
+# ************************************************************************************************************* #
+
 # chop list into multiple lists of maximum length n
 def chunks(l, n=2500):
     for i in range(0, len(l), n):
@@ -261,6 +343,7 @@ with open('/vol/pipeline/v2/lightmf_analysis.txt', 'w') as fp:
 # read/write json gzip
 import gzip
 import json
+
 with gzip.GzipFile(jsonfilename, 'w') as fout:
     fout.write(json.dumps(data).encode('utf-8'))
 with gzip.GzipFile(jsonfilename, 'r') as fin:
@@ -282,6 +365,9 @@ import boto3
 client = boto3.client(service_name='athena',region_name='us-east-1')
 client.start_query_execution(QueryString="select * from test.ads_log_s3 where dy = '02' and mon = '02' and yr = '2017'",ResultConfiguration={'OutputLocation':'s3://bucket/path/'})
 
+# if running from different profiles, set prior to running python or within
+export AWS_PROFILE=ent
+
 # boto3 s3
 def load_csv_from_s3(args,b=f'teams-{args.vpc}-com',p=f'whatever/more.tsv'):
     s3 = boto3.resource('s3')
@@ -299,8 +385,9 @@ def save_to_s3(args,file):
     s3.Bucket(f'teams-{args.vpc}-sessionm-com').upload_file(f'{args.path}/{file}',f'{args.s3_path}/{file}')
 
 # s3fs
+# if assuming instance has proper permissions, make sure to assign an IAM role to it to inherit,or pass profile locally
 import s3fs
-s3 = s3fs.S3FileSystem()
+s3 = s3fs.S3FileSystem() # or s3 = s3fs.S3FileSystem(profile_name=profile)
 raw_s3_file = f"s3://teams-{args.vpc}-sessionm-com/{args.s3_raw_path}/raw.csv"
 core = pd.read_csv(raw_s3_tmp_file, sep="~", header=0, na_values=na_values, compression='gzip', dtype=np.dtype('object'))
 with s3.open(raw_s3_file, 'w') as f:
@@ -362,3 +449,7 @@ conv(torch.Tensor([0,1,0,0,0]).view(1,5,1))
 il = ItemList.from_df(df[['item_id','label']],cols=['item_id'],label_cls=MultiCategoryList)
 sd = il.split_by_rand_pct()
 data = sd.label_from_df('label',label_delim=' ')
+
+
+            'mazu_std_s3_path': f's3://{self.kwargs["mazu_s3_bucket"]}/{self.kwargs["client"]}/warehouse',
+            'mazu_dd_s3_path': f's3://{self.kwargs["mazu_s3_bucket"]}/{self.kwargs["client"]}/data_dump'

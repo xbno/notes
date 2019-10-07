@@ -610,6 +610,165 @@ jeremys advice:
     finish things completely.
 
 #-######################-#
+#       Lesson 8 (2018)
+#-######################-#
+
+object detection:
+    labeled dataset for bounding boxes
+    steps
+        1. classify largest 'thing' in image
+        2. draw its bounding box
+        3. classify whatever is in the bounding box (ideally teh original class)
+
+coding tips:
+    try to reduce vertical size of code
+    try to reduce names to very short vars
+    training_annotations == trn_anno
+
+x,y coords:
+    computer vision world thinks in width by height
+    math/python/fastai/torch/numpy thinks in rows (downward) by cols (left to right)
+    also converts bounding boxes to top left point, and bottom rigth point as opposed to what data is labeled as
+
+vscode:
+    jump to requires 'brew install ctags'
+    shortcuts (https://code.visualstudio.com/shortcuts/keyboard-shortcuts-macos.pdf)
+
+vscode navigation:
+    navigate back/forward: ctrl + -, ctrl + shift + - (https://stackoverflow.com/questions/35424367/how-to-navigate-back-to-the-last-cursor-position-in-visual-studio-code)
+    jump to def: cmd + click, highlight + f12
+    find in workspace: cmd + t
+
+cv2 (opencv) vs pil vs torchvision:
+    open cv is fast because it unlocks pythons single thread
+
+approach:
+    a lot of work goes into setting up stuff to explore the dataset, functions etc
+    need to get to a point with a new dataset that you can *rapidly explore*
+    when starting with a new problem, start with easy wins and progessively update
+    for example start with the largest item classifier
+        1. get largest bounding box per image
+
+    also, think of problem as inputs and outputs (or differnatial programming?)
+    so to create a bounding box you need top x,y adn bottom x,y coords (which are continuous)
+        so you need to get 4 activations from a neural net
+    the other half is to figure out what loss function you want to use
+        what makes the 4 numbers lower when theyre closer to the right numbers?
+        mse works because it comparing each activation to the truth but overly penalizes bad errors
+        l1loss (aka abs loss) works better? he recommends
+
+creating functions:
+    he writes psudocode of how he'd like to use the function
+    then he writes the function to actually do it
+    then run the original code
+    also, hes all about ensuring what he writes is correct. not to the point of looking at all bounding boxes within image but judging it subjectively
+
+lr find:
+    plots loss per batch - so if you don't have many batches this won't work well
+        might have to add n_skip=5 and n_skip_end=1
+    normally skips the first 10 batches because theyre very low low and the last 5 because the loss shoots sky high
+
+debugging:
+    pdb.set_trace() - should look into this
+    %debug (opens it up at the line of exception so you can inspect!)
+
+fastai models:
+    custom_head is a way to add a custom layer to a pretrained model
+    where the 'head' is a nn.Sequential(Flatten(),nn.Linear(num_in,num_out))
+
+#-######################-#
+#       lesson 9 (2018)
+#-######################-#
+
+data aug and dependent vars:
+    if any of the output is based on pixel values like bounding boxes and you use data aug to train
+    you need to transform the dependent variable as well
+    so in transforms you need to add the tfm_y=TfmType.Coord
+    as usual need to check the data as you do it to double check your transforms aren't warping too much to create incorrect or overly wide bounding boxes
+
+loss function:
+    whatever makes this lower will optimize the network
+
+rule of thumb:
+    relu then batchnorm
+
+dropout:
+    also adding dropout even if you don't use it is a good idea because you can up the param and retain
+    go with overfitting with a overly complex model then just up the p val
+    **also loading a saved model with dropout unused makes it easier to add later on
+
+custom dataset:
+    requires playing with classes and all that
+    but basic idea is to feed the model x as well as y1 (class) and y2 (bounding box)
+    really just tying multiple ys to the same x. no big deal because the ys aren't used as inputs only as targets in loss or metrics
+
+both bounding box and class:
+    create activations in terms of adding the number of outs you need
+    l1oss on first 4 activations
+    crossent on 4: activations
+    then make the loss function look at each appropriately
+
+creating custom loss func:
+    reqquires inputs and outputs
+    also you can add multiple loss together
+    make sure the multiple losses are around the same scale so one doesn't over power the other
+        bounding box error in 100s
+        cross entropy in 1s
+
+arch for multi class (for arbitrary size 16):
+    flattened end layer (yolo v1 + v2):
+        4 x 16 bounding box
+        num_classes x 16 for classifier
+    or conv layer (yolo v3 + ssd use this. typically better performing):
+        to convert the weights to a 4 x 4 x (4 + num_classes) tensor output
+    why? because of receptive field of the activation of the convs
+    he still flattens the last activaton layer because the numbers hvae been calculated via conv anyways and the loss function doesn't care
+
+matching problem:
+    loss function this time not only needs to classify and find bounding box
+    but also needs to see if its close enough to that part of the image to make sense
+    aka if you classify a dog in top right but the dog was really int he bottom left with bounding box there its really incorrect
+
+my idea prior to watching:
+    id say you take the center of the receptive field per conv strand and measure distance between the center of a bounding box
+    so you have to shuffle a target across all strands and find when its distance is lowest
+    then call that strand taken, and try all the each next target and do the same through the leftover strands?
+
+actual solution:
+    find overlap between target bounding box and receptive feild box (which is just the image split into 16)
+    by taking the jaccard index aka area of overlap over total area of the recpetive feild + anything in the bounding box oustide of the recp field
+    then you also take each recptive feild and find the overlap of the truth bounding box for each
+    then take labels from 1st, and threshold labels for 2nd
+    anchor box == receptive field
+
+then loss function:
+    then calculate loss only on the bounding box of the positive indexs in the matching
+    also scale bounding boxes to be able to scale outside of the receptive feild
+
+minor tweak:
+    he doesn't use bceloss as the standard for multiclass because having a class of background is
+        very difficult because its asking if the model knows the similarities between all backgrounds to predict them properly
+    instead he makes it use bce and check if any of the classses exist, if no no no no no then its background
+    this type of minor tweak usually makes a big difference. need to understand why
+
+reality:
+    this method is constained to just 16 anchor boxes
+    need to make more anchor boxes to use the loss and better scale/shrink the guesses of the bounding boxes
+
+focal loss:
+    similar to bceloss except makes the loss variable when confidence in the prediction still isn't great
+    basically tuning iffy guesses to not penalize the loss enough to have the loss function then work
+
+reading papers:
+    outlook on any method that involves multiple 'stages' or models to product an output
+    typically these always get reduced to a single end to end model
+    so he ignored obj det until ssd came up with a way to do it end to end
+
+#-######################-#
+#       lesson 10 (2018)
+#-######################-#
+
+#-######################-#
 #       Bert
 #-######################-#
 

@@ -384,6 +384,33 @@ def save_to_s3(args,file):
     s3 = boto3.resource('s3')
     s3.Bucket(f'teams-{args.vpc}-sessionm-com').upload_file(f'{args.path}/{file}',f'{args.s3_path}/{file}')
 
+# boto3 GzipFile (on lambdas)
+import numpy as np
+import boto3
+import gzip
+import pandas as pd
+from io import BytesIO, TextIOWrapper
+
+# write, save as a gz_buffer in memory
+s3_loc = 'teams-ent-sessionm-com'
+fname = 'admteam/integration/wellbiz/std_apd_noemail_25000.json.gz'
+
+ex_json = {'a':[1,2,3]}
+
+gz_buffer = BytesIO()
+with gzip.GzipFile(mode='w', fileobj=gz_buffer) as fout:
+    fout.write(json.dumps(ex_json).endocde('utf-8'))
+
+s3_resource = boto3.resource('s3')
+s3_resource.Object(s3_loc, fname).put(Body=gz_buffer.getvalue())
+
+# read
+s3 = boto3.client('s3')
+obj = s3.get_object(Bucket=s3_loc, Key=fname)
+
+with gzip.GzipFile(mode='r', fileobj=obj['Body']) as fin:
+    data = json.loads(fin.read().decode('utf-8'))
+
 # s3fs
 # if assuming instance has proper permissions, make sure to assign an IAM role to it to inherit,or pass profile locally
 import s3fs

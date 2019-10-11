@@ -1,0 +1,114 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+Args	../python.py	/^class Args():$/;"	kind:class	line:193
+BytesIO	../python.py	/^from io import BytesIO, TextIOWrapper$/;"	kind:namespace	line:392
+HTML	../python.py	/^from IPython.core.display import display, HTML$/;"	kind:namespace	line:39
+TextIOWrapper	../python.py	/^from io import BytesIO, TextIOWrapper$/;"	kind:namespace	line:392
+__init__	../python.py	/^    def __init__():$/;"	kind:member	line:194
+a	../python.py	/^a = {'a':.1,'b':.2,'c':.3,'e':.5,'f':2,'g':2}$/;"	kind:variable	line:260
+argparse	../python.py	/^import argparse$/;"	kind:namespace	line:186
+args	../python.py	/^args = Args$/;"	kind:variable	line:197
+args	../python.py	/^args = parser.parse_args()$/;"	kind:variable	line:190
+b	../python.py	/^    b = pickle.load(handle)$/;"	kind:variable	line:356
+b	../python.py	/^b = {'a':1,'b':2,'c':3,'d':4,'h':1,'g':1}$/;"	kind:variable	line:261
+boto3	../python.py	/^import boto3$/;"	kind:namespace	line:364
+boto3	../python.py	/^import boto3$/;"	kind:namespace	line:389
+cat_emb_lookups	../python.py	/^cat_emb_lookups = torch.cat([u_emb(torch.LongTensor(users)),i_emb(torch.LongTensor(items))],1)$/;"	kind:variable	line:466
+chunks	../python.py	/^def chunks(l, n=2500):$/;"	kind:function	line:333
+client	../python.py	/^client = boto3.client(service_name='athena',region_name='us-east-1')$/;"	kind:variable	line:365
+collections	../python.py	/^import collections$/;"	kind:namespace	line:285
+columns	../python.py	/^columns = '(origin_id serial primary key, '+' text, '.join([c for c in df.columns if 'origin_id' not in c]) + ' text);'$/;"	kind:variable	line:227
+combined_df	../python.py	/^combined_df = format_phone_numbers(combined_df,phone_dict)$/;"	kind:variable	line:113
+conv	../python.py	/^conv = torch.nn.Conv1d(5,1,1,padding=2,bias=False)$/;"	kind:variable	line:470
+core	../python.py	/^core = pd.read_csv(raw_s3_tmp_file, sep="~", header=0, na_values=na_values, compression='gzip', dtype=np.dtype('object'))$/;"	kind:variable	line:419
+create_engine	../python.py	/^from sqlalchemy import create_engine$/;"	kind:namespace	line:440
+d	../python.py	/^    d = json.load(f)$/;"	kind:variable	line:426
+data	../python.py	/^    data = json.loads(fin.read().decode('utf-8'))$/;"	kind:variable	line:350
+data	../python.py	/^    data = json.loads(fin.read().decode('utf-8'))$/;"	kind:variable	line:412
+data	../python.py	/^data = sd.label_from_df('label',label_delim=' ')$/;"	kind:variable	line:478
+datetime	../python.py	/^from datetime import datetime, timedelta$/;"	kind:namespace	line:243
+df	../python.py	/^    df = pd.concat([df,pd.read_csv(fp)])$/;"	kind:variable	line:276
+df	../python.py	/^df = df.replace(['', ' ', 'null','None','Null','none','NONE','?','na'], np.nan)$/;"	kind:variable	line:67
+df	../python.py	/^df = pd.DataFrame()$/;"	kind:variable	line:274
+df	../python.py	/^df = pd.read_csv('\/home\/ec2-user\/corecustomers_ctrla_utf8.csv',sep=r'\\\\\\\\001',nrows=500000,usecols=['summary_memberstatus','membershipstatus'])$/;"	kind:variable	line:58
+df	../python.py	/^df = pd.read_csv(f'{args.path}\/raw_calc.csv',sep=r'\\\\\\\\001',dtype=np.dtype('object')) # dtype = object reads values either a string or nan$/;"	kind:variable	line:59
+df_no_outliers	../python.py	/^df_no_outliers = df[df.sum(axis=1).map(lambda x: x < q)]$/;"	kind:variable	line:149
+dfs	../python.py	/^dfs = [df for df in np.array_split(df,3)]$/;"	kind:variable	line:153
+display	../python.py	/^from IPython.core.display import display, HTML$/;"	kind:namespace	line:39
+e	../python.py	/^    e = pd.read_csv(f, sep='~')$/;"	kind:variable	line:423
+error_codes	../python.py	/^error_codes = {'age':'age .* is out of range',$/;"	kind:variable	line:134
+error_values	../python.py	/^error_values = {'age':'age (.*) is out of range',$/;"	kind:variable	line:137
+ex_json	../python.py	/^ex_json = {'a':[1,2,3]}$/;"	kind:variable	line:398
+ex_model	../python.py	/^ex_model = torch.nn.Sequential(torch.nn.Linear(10,1))$/;"	kind:variable	line:462
+file_to_upload	../python.py	/^file_to_upload = f'{args.path}\/std_apd_email_{args.sample}{letter}.json'$/;"	kind:variable	line:240
+filt	../python.py	/^filt = torch.nn.Parameter(torch.Tensor([[[0],[1],[0],[0],[0]]]))$/;"	kind:variable	line:471
+fname	../python.py	/^fname = 'admteam\/integration\/wellbiz\/std_apd_noemail_25000.json.gz'$/;"	kind:variable	line:396
+format_number_to_int	../python.py	/^def format_number_to_int(x):$/;"	kind:function	line:116
+format_phone_numbers	../python.py	/^def format_phone_numbers(df,phone_dict):$/;"	kind:function	line:109
+get_logger	../python.py	/^def get_logger(name,logfile):$/;"	kind:function	line:206
+glob	../python.py	/^from glob import glob$/;"	kind:namespace	line:272
+gz_buffer	../python.py	/^gz_buffer = BytesIO()$/;"	kind:variable	line:400
+gzip	../python.py	/^import gzip$/;"	kind:namespace	line:344
+gzip	../python.py	/^import gzip$/;"	kind:namespace	line:390
+home	../python.py	/^home = os.environ['HOME']$/;"	kind:variable	line:171
+i_emb	../python.py	/^i_emb = torch.nn.Embedding(5,5)$/;"	kind:variable	line:458
+il	../python.py	/^il = ItemList.from_df(df[['item_id','label']],cols=['item_id'],label_cls=MultiCategoryList)$/;"	kind:variable	line:476
+inc_GR.py	../inc_GR.py	1;"	kind:file	line:1
+inc_GR_m	../python.py	/^import inc_GR_m # located within the same folder as the tests script$/;"	kind:namespace	line:287
+insert_postgres	../python.py	/^def insert_postgres(args,job_config,df):$/;"	kind:function	line:442
+io	../python.py	/^import pandas.io.sql as psql$/;"	kind:namespace	line:432
+items	../python.py	/^items = [0,1]$/;"	kind:variable	line:465
+json	../python.py	/^import json$/;"	kind:namespace	line:345
+letter	../python.py	/^letter = chr(ord('a')+i)$/;"	kind:variable	line:239
+load_csv_from_s3	../python.py	/^def load_csv_from_s3(args,b=f'teams-{args.vpc}-com',p=f'whatever\/more.tsv'):$/;"	kind:function	line:372
+load_json_from_s3	../python.py	/^def load_json_from_s3(args,b=f'teams-{args.vpc}-com',p=f'admteam\/common\/{args.vpc}_config.json'):$/;"	kind:function	line:375
+located	../python.py	/^import inc_GR_m # located within the same folder as the tests script$/;"	kind:namespace	line:287
+logger	../python.py	/^logger = get_logger('inc_GR.py','\/data\/20190318.log')$/;"	kind:variable	line:218
+match_ct	../python.py	/^match_ct = match['sm_id'].value_counts()$/;"	kind:variable	line:75
+matplotlib	../python.py	/^import matplotlib$/;"	kind:namespace	line:24
+np	../python.py	/^import numpy as np$/;"	kind:namespace	line:388
+obj	../python.py	/^obj = s3.get_object(Bucket=s3_loc, Key=fname)$/;"	kind:variable	line:409
+only_nums	../python.py	/^def only_nums(x):$/;"	kind:function	line:129
+os	../python.py	/^import os$/;"	kind:namespace	line:170
+pandas	../python.py	/^import pandas.io.sql as psql$/;"	kind:namespace	line:432
+parser	../python.py	/^parser = argparse.ArgumentParser()$/;"	kind:variable	line:187
+pd	../python.py	/^import pandas as pd$/;"	kind:namespace	line:286
+pd	../python.py	/^import pandas as pd$/;"	kind:namespace	line:391
+pg	../python.py	/^import psycopg2 as pg$/;"	kind:namespace	line:431
+psql	../python.py	/^import pandas.io.sql as psql$/;"	kind:namespace	line:432
+pytest	../python.py	/^import pytest$/;"	kind:namespace	line:284
+python.py	../python.py	1;"	kind:file	line:1
+q	../python.py	/^q = df.sum(axis=1).quantile(0.99)$/;"	kind:variable	line:147
+raw_s3_file	../python.py	/^raw_s3_file = f"s3:\/\/teams-{args.vpc}-sessionm-com\/{args.s3_raw_path}\/raw.csv"$/;"	kind:variable	line:418
+rec_df	../python.py	/^rec_df = rec_df.drop_duplicates(subset=['rec','score'],keep='first') # remove duplicates$/;"	kind:variable	line:70
+rec_df	../python.py	/^rec_df = rec_df[rec_df.duplicated(subset=['rec','score'],keep=False)] # keep only duplicates$/;"	kind:variable	line:71
+rec_df	../python.py	/^rec_df = rec_df[~rec_df.duplicated(subset=['rec','score'],keep=False)] # keep only non-duplicates$/;"	kind:variable	line:72
+remap	../python.py	/^remap = {}$/;"	kind:variable	line:268
+rule	../python.py	/^rule = ['firstname','lastname','emailname']$/;"	kind:variable	line:92
+run_postgres_query	../python.py	/^def run_postgres_query(config,query):$/;"	kind:function	line:435
+s3	../python.py	/^s3 = boto3.client('s3')$/;"	kind:variable	line:408
+s3	../python.py	/^s3 = s3fs.S3FileSystem() # or s3 = s3fs.S3FileSystem(profile_name=profile)$/;"	kind:variable	line:417
+s3_loc	../python.py	/^s3_loc = 'teams-ent-sessionm-com'$/;"	kind:variable	line:395
+s3_resource	../python.py	/^s3_resource = boto3.resource('s3')$/;"	kind:variable	line:404
+s3fs	../python.py	/^import s3fs$/;"	kind:namespace	line:416
+same	../python.py	/^import inc_GR_m # located within the same folder as the tests script$/;"	kind:namespace	line:287
+save_to_s3	../python.py	/^def save_to_s3(args,b=f'teams-{args.vpc}-com',p=f'whatever'):$/;"	kind:function	line:379
+save_to_s3	../python.py	/^def save_to_s3(args,file):$/;"	kind:function	line:383
+script	../python.py	/^import inc_GR_m # located within the same folder as the tests script$/;"	kind:namespace	line:287
+sd	../python.py	/^sd = il.split_by_rand_pct()$/;"	kind:variable	line:477
+stats	../python.py	/^from scipy import stats$/;"	kind:namespace	line:156
+sys	../python.py	/^import sys$/;"	kind:namespace	line:166
+test_inc_GR_over_time	../python.py	/^def test_inc_GR_over_time(raw_s3_files, init_map_s3_file, todays, expected_map_s3_file, creation_date_col):$/;"	kind:function	line:299
+tests	../python.py	/^import inc_GR_m # located within the same folder as the tests script$/;"	kind:namespace	line:287
+the	../python.py	/^import inc_GR_m # located within the same folder as the tests script$/;"	kind:namespace	line:287
+timedelta	../python.py	/^from datetime import datetime, timedelta$/;"	kind:namespace	line:243
+today	../python.py	/^today = datetime.now().strftime('%Y-%m-%d')$/;"	kind:variable	line:246
+torch	../python.py	/^import torch$/;"	kind:namespace	line:456
+u_emb	../python.py	/^u_emb = torch.nn.Embedding(5,5)$/;"	kind:variable	line:457
+updates	../python.py	/^updates = match[match['sm_id'].isin(match_ct[match_ct>1].index)].sort_values(by='sm_id')$/;"	kind:variable	line:76
+users	../python.py	/^users = [0,1]$/;"	kind:variable	line:464
+within	../python.py	/^import inc_GR_m # located within the same folder as the tests script$/;"	kind:namespace	line:287

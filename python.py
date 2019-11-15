@@ -63,6 +63,12 @@ df.to_csv(f'/mnt/gc/data/raw_calc.csv',sep='~',quotechar='"',index=False, quotin
 pd.to_numeric(df['tester'], errors='coerce')
 pd.to_datetime(df['tester'], errors='coerce')
 
+# convert from unix timestamp to readable
+pd.to_datetime(df['userTags_expires_at'],unit='s')
+
+# timezones
+pd.Timestamp('09/13/19 10:46').tz_localize('America/New_York').tz_convert('Asia/Singapore')
+
 # replace values with nan
 df = df.replace(['', ' ', 'null','None','Null','none','NONE','?','na'], np.nan)
 
@@ -251,7 +257,13 @@ datetime.strptime('20180531', '%Y%m%d')
 # add day
 datetime.strftime(datetime.now()+timedelta(days=1),'%Y-%m-%d')
 
+# show all timezones, pytz tz
+import pytz
+pytz.all_timezones_set
 
+from dateutils import tz
+def utc2sing(dt,from_zone=tz.gettz('UTC'),to_zone=tz.gettz('Asia/Singapore')):
+    return dt.tz_localize(from_zone).tz_convert(to_zone)
 
 # regex
 'datetime.datetime(2018, 7, 1)' = re.search("'start_date': (.+\(.+\))",''''start_date': datetime.datetime(2018, 7, 1),''').group(1)

@@ -1,0 +1,10 @@
+# Keyboard shortcut reminders
+# tmux
+
+# vscode
+shift + cmd + p = open command pallet
+
+# selection
+cmd + option + f = find and replace
+alt = click = create multiple cursors
+shift + cmd + l = select all words same as highlighted word

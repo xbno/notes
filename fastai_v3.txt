@@ -801,6 +801,9 @@ then finetuning but instead of chopping off the end, or adding another layer, th
 #       MIT
 #-######################-#
 
+lex friedman talks
+https://www.youtube.com/watch?v=53YvP6gdD7U
+
 google automl:
     using reinforcement learning to tweak models and change optimization
     adanet:
@@ -857,8 +860,6 @@ skip gram:
 
 sequence basd recommendations based on transactions as each input
 
-lex friedman talks
-https://www.youtube.com/watch?v=53YvP6gdD7U
 
 #-######################-#
 #       Jerry Howard Lex Freidman Talk

@@ -1,0 +1,32 @@
+- What metrics do you use to define performance? What is your experimental setup?
+
+In terms of this problem, I think optimizing f1 score is a balanced metric. Since we care about both false positives and false negatives equally and f1 is a metric that 
+
+- What would your next steps be for deploying your model to production?
+
+First I’d build out a proper pipeline to apply all transformations used during training to the data that is input to the model in production. Each preprocessing step would have associated unit tests asserting they properly perform what they're meant to do. I'd also save of the distributions of the features in the data used to train the chosen model - since these can gradually change over time and can be a cause of preformance degradation and can be used in testing.
+
+Mlflow is a great tool to reduce the complexity of saving and iterating throughout the training and deployment cycles of models. So I'd use it to containerize production ready models and sagemaker to host and serve the container via an api. Mlflow also saves all models deloyed to s3 so you could rollback if future models fail. And this probably goes without saying but this would all be checked into a repo and source controlled.
+
+If not using mlflow for whatever reason, using a lambda or serving a container via ECR would also work. 
+
+In addition I'd set up a simple baseline model to compare newer models with each new deployment. And set random seed values to aim for deterministic training. This aids in debugging and evaluating added features.
+
+I'd also take into consideration the frequency in which we would expect to update the model. Since the
+
+- If you had more training data, how might your modeling approach change? What other algorithms would you test?
+
+More data would likely require a different choice of tools to be able to quickly iterate during evaluation. Sklearn isn't known for efficiency on large data as much as its ease of prototyping of smaller scale data. There are better optimized libraries like h2o and xgboost that would increase training and inference performance. Or depending on the structure of additional data such as free text descriptions of the dish using word embeddings, images of the dish, etc. pytorch or keras/tensorflow would be fit the problem. 
+
+- If you had hundreds of labels instead of 5, how would your modeling approach change?
+
+It wouldn't change too much since I've intentionally built the training csvs into a single df during preprocessing and fit the vectorizer on the full vocab of the df. One addition would be a function to properly determine the name of the new labels which could be determined by taking the names of all the columns excluding the feature columns. This would require a strict adherence and standardization of the training data csv schema. Another aspect would be potentially controlling for imbalanced labels by down/up sampling.
+
+- Suppose you were asked to categorize millions of menus entered as free text, with no training data. How would you approach the problem? If you had to collect training data, how would you go about doing it for hundreds of labels?
+
+I'd do some research on what recent methods are docuymented in papers and respected blog posts vs what I've come to know as a typical method. A standard approach seems to be to take pretrained which would probably lead me to either using pretrained embeddings
+
+- What additional data are you interested in getting, and how would you incorporate it? 
+
+
+

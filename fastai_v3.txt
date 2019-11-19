@@ -785,6 +785,17 @@ context-free vs contextual:
 zero-shot:
     zero-shot learning is
 
+attention:
+    almost like a convnet type thing for language. where it layers multiple query-value filters
+        on each word and then stacks them.
+
+two pre-training methods similtaneously.
+    these are unsupervised since they can be trained on raw text:
+    1. mask a % of the words of a sentance, then try to predict them. and it can use the whole sentance to predict
+    2. is this the next sentance?
+
+then finetuning but instead of chopping off the end, or adding another layer, they use the same output layer and change the task for a given node
+
 
 #-######################-#
 #       MIT
@@ -865,3 +876,190 @@ Active learning:
 
 Data Creation:
     Always important to figure out what and how data is created
+
+
+#-######################-#
+#       Deploying ML
+#-######################-#
+
+Service level agreements:
+    max response time
+    max retrain time
+    availability
+    quality/confidence
+    monitor
+
+Store lineage of models overtime
+    metadata like version, name, type, ml framework, eval metric
+    serialized object
+    host via api
+
+When hosting need to think about:
+    how to configure the app
+    how many instances/ram
+    connection to db/credentials
+    creashes and recovery
+    load balancing and workload scaling
+
+Continuous Integration
+    Gitlab CI/CD
+
+
+Services
+    Cloud Foundry
+
+#-######################-#
+#       Recommendations
+#-######################-#
+
+# url - https://developers.google.com/machine-learning/recommendation/overview/terminology
+
+items - entities recommended
+query - information used to make recommendations
+    user features - user id, user hx
+    item features - item id item metadata
+    context - time of day, user's device
+embeddings
+    vector representations of discrete items
+
+typical steps:
+    candidate generation - reduce total items down to a manageable set 100s of thousands
+    scoring - reduce the candidates to a set of
+    re-ranking - is like applying the business rules boosting or negating based on user pref and fresh content
+
+candidate generation:
+    content based:
+        similarities between the items themselves.
+    collaborative based:
+        similarities between queries and items simultanteously
+
+embedding space:
+    items and queries (potentially users and context) are mapped  to embedding vectors
+    captures some latent structure of the item or query set
+    vectors can be evaluated by "closeness" with a similarity measure
+
+similarity measure:
+    produces a scalar to represent to vectors "closeness" or distance
+    the closer they are the more similar, however different measures will produce different results
+    cosine distance:
+        angle between the vectors
+        basically omits vector magnitudes (ie making them not matter)
+        used frequently in text due to this fact - https://cmry.github.io/notes/euclidean-v-cosine
+    dot product:
+        cosine angle multiplied by the product of norms
+    euclidean:
+        standard root squared
+
+content based:
+    pros:
+        can easily scale to large number of users
+        can recommend niche items that few others are interested in
+    cons:
+        hand-engineered features requires domain knowledge
+        can only make recs on existing interests, cannot expand interests
+
+collaborative:
+    explicit - requires questionaires to be filled out
+    implicit - generated from user behavior
+    learns embeddings for each item and user in the same space automatically
+
+    matrix factorization:
+        embeddings are learned such that the user_emb*item_emb.T ~= feedback_matrix
+        due to the sinze of user/item_embs being small this can be significatntly more compact than learning the full matrix
+        objective function:
+            sum squared errors - bad because it doesn't assume 0s for empties
+            frobieus error - mse with 0s for unwatched
+            weighted matrix factorization - weighted mixture of sum over observed and unobserved entries and function of frequency
+
+    pros:
+        no domain knowledge required
+        model can help users find new interests (look a like)
+        doesn't need context features
+    cons:
+        cannot handle new items/features (cold start problem) but can be addressed by average embeddings from same category or user
+        cannot easily incorporate side information
+
+softmax (nn):
+
+
+#-######################-#
+#       Algorithm Analysis
+#-######################-#
+
+readability
+    very important but unrelated to actual algorithm 'betterness'
+
+efficiency
+    space requirements
+    execution time
+
+due to differences in programming language, hardware, underlying software, etc.
+    it is very difficult to compare the actual execution times between different
+    implementations of the same algorithm. thats why big-o was created
+
+big-o
+    requires you to think of solving an algo in terms of 'basic unit of computation'
+    for example the number of assignment statements like 'x = 0'
+    the order of magnitude function (Big-O) describes the part of T(n) that increases the fastest
+        as the value of n increases (the size of the problem increases)
+
+for a looping summation, the time it takes to solve any problem of size n is:
+    T(n) = 1 + n <- is same as -> O(n)
+    T(n) = 5n^2 + 27n + 1005 <- is same as -> O(n^2)
+
+sometimes performace depends on the values of the data rather than the size of the problem
+    in these cases we charcterze them in:
+        best
+        worst
+        average
+
+common big-o functions
+    1 - constant
+        single assignments/calculations
+    log(n) - logarithmic
+    n - linear
+        for loop assignments/calcs
+    n log(n) - log linear
+        sorting
+        if the problem size is cut in half each iteration
+    n^2 - quadratic
+        double for loop assignments/calcs
+        sorting
+    n^3 - cubic
+    2^n - exponential
+    n! - factorial
+        brute force for anagrams
+
+many times algorithms will sacrifice space to save time
+    i.e. storing lists or a running minimum will reduce run time
+
+#-######################-#
+#       Data Structures Performance
+#-######################-#
+
+lists
+    O(1) operations
+        indexing
+        assigning val to index
+        appending
+    O(k)
+        concating (k=size of list being concated)
+    O(n)
+        pop(0) because the entire list needs to shift over!
+        contains (in) can you believe it?!
+
+list creation
+    list(range()) - best
+    [i for i in range()] - twice as good as loop below
+    for i in range(): append(i)
+    for i in range(): l + [i] - worst by a long shot
+
+
+dicts
+    O(1) operations
+        get item
+        set item
+        contains (in)
+    O()
+
+**need to learn how to use timeit.Timer() to measure o(n)

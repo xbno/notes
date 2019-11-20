@@ -1,0 +1,27 @@
+ml basics
+
+loss functions
+    mse
+    cross entropy
+activation functions
+    relu
+algos
+    non negative matrix fac
+
+coding examples
+
+binary search
+    sqrt
+
+sequential sort
+    min to max
+
+bubble sort and end early
+    
+quick sort
+
+dynamic programming
+    leet code problem
+
+hashing
+

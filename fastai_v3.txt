@@ -910,7 +910,7 @@ Services
     Cloud Foundry
 
 #-######################-#
-#       Recommendations
+#       Google Recommendations
 #-######################-#
 
 # url - https://developers.google.com/machine-learning/recommendation/overview/terminology
@@ -982,6 +982,23 @@ collaborative:
 
 softmax (nn):
 
+
+#-######################-#
+#       Google YouTube Recs Paper
+#-######################-#
+
+# https://storage.googleapis.com/pub-tools-public-publication-data/pdf/45530.pdf
+
+challenges
+    scale
+        many algos odn't work at their scale
+    freshness
+        dynamic corpus requiring balancing new content with well-established
+        viewed as exploration/exploitation
+    noisey
+        difficult based on few explicit rankings
+        sparsity
+        poor metadata no ontology
 
 #-######################-#
 #       Algorithm Analysis

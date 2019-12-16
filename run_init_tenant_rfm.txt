@@ -1,0 +1,31 @@
+# used during investigation
+select distinct dt from user_rfm where rewards_system_id = 200;
+select min(dt) from user_actions where rewards_system_id = 200;
+select * from user_rfm_snapshot where rewards_system_id = 200 and registered_user_id = 32933616;
+
+init_date = first date of data
+
+spark-sql -f initialize_tenant_calculate_rfm.sql --hiveconf today=2019-07-16 --hiveconf init_date=2019-05-01 --hiveconf current_date=2019-07-16 --hiveconf rsid=200
+
+set hive.exec.dynamic.partition.mode=nonstrict
+
+# insert newly calc'd vals (for testing in stg)
+insert overwrite table user_rfm partition (rewards_system_id, dt) select organization_id,action_type,registered_user_id,action_currency,first_seen,recency,action_value,n_actions,cum_value7,freq7,cum_value30,freq30,cum_value_all,freq_all,updated_at,age_of_customer,lifetimes_frequency,lifetimes_recency,total_spend,200,dt from user_rfm_new_tenant;
+
+##############
+# for ent
+##############
+# might need to set this
+set hive.exec.dynamic.partition.mode=nonstrict
+
+# drop portion of user_rfm
+alter table user_rfm drop partition (rewards_system_id = 200);
+
+# run script
+spark-sql -f initialize_tenant_calculate_rfm.sql --hiveconf today=2019-07-16 --hiveconf init_date=2019-05-01 --hiveconf current_date=2019-07-16 --hiveconf rsid=200
+
+# insert the newly calcd values from user_rfm_new_tenant into the user_rfm table
+insert overwrite table user_rfm partition (rewards_system_id, dt) select * from user_rfm_new_tenant;
+
+# lastly update the snapshot with that data (for rsid=200 and everyone else in economy)
+INSERT OVERWRITE TABLE user_rfm_snapshot SELECT * FROM user_rfm where dt = '2019-07-16';

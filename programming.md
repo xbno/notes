@@ -20,3 +20,5 @@
     data is stored/manipuated) but not for connectors/interfaces. Rule of thumb
     is to build tests as before and as you modify your functions/classes. If tests
     are too hard to write, its likely the design is suboptimal/too complex.
+
+#

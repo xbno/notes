@@ -1,27 +1,10 @@
-ml basics
+optimization
 
-loss functions
-    mse
-    cross entropy
-activation functions
-    relu
-algos
-    non negative matrix fac
+pandas
+ df.apply
 
-coding examples
+numpy
+ broadcasting
+ arrays
 
-binary search
-    sqrt
-
-sequential sort
-    min to max
-
-bubble sort and end early
-    
-quick sort
-
-dynamic programming
-    leet code problem
-
-hashing
-
+multiprocessing
